@@ -19,12 +19,12 @@ public class SequentialOptimization {
 	private final List<Particle> particles;
 	
 	//private final int iterations;
-	private final Double[] mv = {0.2, 0.2, 0.2};
+	private final Double[] mv = {(double) 0.5, (double) 0.5, (double) 0.5};
 	private final List<Double> maximumVelocity = Arrays.asList(mv);
-	private final double inertia = 0.2;
-	private final double selfWeight = 0.2;
-	private final double bestWeight = 0.2;
-	private final double fdrWeight = 0.4;
+	private final double inertia = 0.5;
+	private final double selfWeight = 1;
+	private final double bestWeight = 1;
+	private final double fdrWeight = 16;
 	
 	private List<Double> bestPosition = null;
 	private double bestValue;
@@ -68,7 +68,9 @@ public class SequentialOptimization {
 		for (int p = 0; p < numberOfParticles; p++) {
 			System.out.println("Particle " + p + ": " + particles.get(p).getValue());
 		}
-		updateParticleList();
+		for (int i = 0; i < 1000; i++) {
+			updateParticleList();
+		}
 		System.out.println("-----------------------------------------------------");
 		for (int p = 0; p < numberOfParticles; p++) {
 			System.out.println("Particle " + p + ": " + particles.get(p).getValue());
@@ -128,7 +130,6 @@ public class SequentialOptimization {
 					bestWeight * (bestPosition.get(d) - position.get(d)) + 
 					fdrWeight * (fdrPosition.get(d) - position.get(d));
 			velocity.set(d, Math.min(maximumVelocity.get(d), Math.max(-maximumVelocity.get(d), dVelocity)));
-			velocity.set(d, dVelocity);
 		}
 		return velocity;
 	}
