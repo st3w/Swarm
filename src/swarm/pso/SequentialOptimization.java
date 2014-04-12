@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class SequentialOptimization {
+public class SequentialOptimization implements SwarmOptimization {
 	//Optimize function on interval from lower to upper bounds
 	private final int dimensions;
 	private final PSOFunction<Double> function;
