@@ -1,5 +1,7 @@
 package swarm.pso;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class FunctionConfiguration {
@@ -12,23 +14,23 @@ public class FunctionConfiguration {
 			List<Double> lowerBounds, List<Double> upperBounds) {
 		this.dimensions = dimensions;
 		this.function = function;
-		this.lowerBounds = lowerBounds;
-		this.upperBounds = upperBounds;
+		this.lowerBounds = Collections.unmodifiableList(new ArrayList<Double>(lowerBounds));
+		this.upperBounds = Collections.unmodifiableList(new ArrayList<Double>(upperBounds));
 	}
 
-	public int getDimensions() {
+	public final int getDimensions() {
 		return dimensions;
 	}
 
-	public PSOFunction<Double> getFunction() {
+	public final PSOFunction<Double> getFunction() {
 		return function;
 	}
 
-	public List<Double> getLowerBounds() {
+	public final List<Double> getLowerBounds() {
 		return lowerBounds;
 	}
 
-	public List<Double> getUpperBounds() {
+	public final List<Double> getUpperBounds() {
 		return upperBounds;
 	}
 	
