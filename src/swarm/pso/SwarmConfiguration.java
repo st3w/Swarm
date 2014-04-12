@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SwarmConfiguration {
+public class SwarmConfiguration extends FunctionConfiguration {
 	private final double inertia;
 	private final double selfWeight;
 	private final double bestWeight;
@@ -12,16 +12,17 @@ public class SwarmConfiguration {
 
 	private final List<Double> maximumVelocity;
 	
-	private final FunctionConfiguration functionConf;
-	
 	public SwarmConfiguration(double inertia, double selfWeight, double bestWeight, 
 			double fdrWeight, List<Double> maximumVelocity, FunctionConfiguration functionConf) {
+		
+		super(functionConf);
+		
 		this.inertia = inertia;
 		this.selfWeight = selfWeight;
 		this.bestWeight = bestWeight;
 		this.fdrWeight = fdrWeight;
 		this.maximumVelocity = Collections.unmodifiableList(new ArrayList<Double>(maximumVelocity));
-		this.functionConf = functionConf;
+		
 	}
 
 	public final double getInertia() {
@@ -38,10 +39,6 @@ public class SwarmConfiguration {
 
 	public final double getFdrWeight() {
 		return fdrWeight;
-	}
-
-	public final FunctionConfiguration getFunctionConf() {
-		return functionConf;
 	}
 
 	public final List<Double> getMaximumVelocity() {

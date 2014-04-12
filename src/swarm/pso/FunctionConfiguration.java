@@ -17,6 +17,10 @@ public class FunctionConfiguration {
 		this.lowerBounds = Collections.unmodifiableList(new ArrayList<Double>(lowerBounds));
 		this.upperBounds = Collections.unmodifiableList(new ArrayList<Double>(upperBounds));
 	}
+	
+	public FunctionConfiguration(FunctionConfiguration f) {
+		this(f.dimensions, f.function, f.lowerBounds, f.upperBounds);
+	}
 
 	public final int getDimensions() {
 		return dimensions;
