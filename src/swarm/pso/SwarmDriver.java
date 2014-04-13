@@ -36,6 +36,23 @@ public class SwarmDriver {
 	}
 	
 	public static void main(String[] args) {
+		// Make a 3 dimensional sum of squares function
+		final int dimensions = 3;
+		PSOFunction<Double> function = new SumOfSquares(dimensions);
+		
+		// Function bounds are a list of parameters
+		List<Double> lowerBounds = Arrays.asList(new Double[function.getDimensions()]);
+		List<Double> upperBounds = Arrays.asList(new Double[function.getDimensions()]);
+		
+		// optimize arguments on (-1, 3)
+		for (int i = 0; i < lowerBounds.size(); i++) {
+			lowerBounds.set(i, -1.0);
+			upperBounds.set(i, 3.0);
+		}
+		
+		FunctionConfiguration funcConf = new FunctionConfiguration(function.getDimensions(), function, 
+				lowerBounds, upperBounds);
+		/*
 		// function represents f = x^2 + y^2 + z^2
 		PSOFunction<Double> function = new SumOfSquares(3);
 		List<Double> lowerBounds = Arrays.asList(new Double[function.getDimensions()]);
@@ -54,5 +71,6 @@ public class SwarmDriver {
 		
 		System.out.println(solution);
 		System.out.println(function.function(solution));
+		*/
 	}
 }

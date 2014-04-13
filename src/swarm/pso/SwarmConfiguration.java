@@ -22,7 +22,6 @@ public class SwarmConfiguration extends FunctionConfiguration {
 		this.bestWeight = bestWeight;
 		this.fdrWeight = fdrWeight;
 		this.maximumVelocity = Collections.unmodifiableList(new ArrayList<Double>(maximumVelocity));
-		
 	}
 
 	public final double getInertia() {

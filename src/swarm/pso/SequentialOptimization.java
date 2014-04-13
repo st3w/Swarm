@@ -26,8 +26,8 @@ public class SequentialOptimization implements SwarmOptimization {
 	private final double bestWeight = 1;
 	private final double fdrWeight = 16;
 	
-	private List<Double> bestPosition = null;
-	private double bestValue;
+	private List<Double> bestPosition = null; // the parameters that give the best known value
+	private double bestValue; // the best known value of the function
 	
 	private final Random rand;
 	
