@@ -9,22 +9,26 @@ public class SwarmConfiguration extends FunctionConfiguration {
 	private final double selfWeight;
 	private final double bestWeight;
 	private final double fdrWeight;
+	
+	private final int numParticles;
 
 	private final List<Double> maximumVelocity;
 	
 	public SwarmConfiguration(double inertia, double selfWeight, double bestWeight, 
-			double fdrWeight, List<Double> maximumVelocity, FunctionConfiguration functionConf) {
+			double fdrWeight, int numParticles, List<Double> maximumVelocity, FunctionConfiguration functionConf) {
 		super(functionConf);
 		
 		this.inertia = inertia;
 		this.selfWeight = selfWeight;
 		this.bestWeight = bestWeight;
 		this.fdrWeight = fdrWeight;
+		this.numParticles = numParticles;
 		this.maximumVelocity = Collections.unmodifiableList(new ArrayList<Double>(maximumVelocity));
 	}
 	
 	public SwarmConfiguration(SwarmConfiguration other) {
-		this(other.inertia, other.selfWeight, other.bestWeight, other.fdrWeight, other.maximumVelocity, other);
+		this(other.inertia, other.selfWeight, other.bestWeight, other.fdrWeight, 
+				other.numParticles, other.maximumVelocity, other);
 	}
 
 	public final double getInertia() {
@@ -43,6 +47,9 @@ public class SwarmConfiguration extends FunctionConfiguration {
 		return fdrWeight;
 	}
 
+	public final int getNumParticles() {
+		return numParticles;
+	}
 	public final List<Double> getMaximumVelocity() {
 		return maximumVelocity;
 	}

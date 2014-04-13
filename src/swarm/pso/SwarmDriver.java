@@ -52,6 +52,11 @@ public class SwarmDriver {
 		
 		FunctionConfiguration funcConf = new FunctionConfiguration(function.getDimensions(), function, 
 				lowerBounds, upperBounds);
+		
+		Double[] mv = { 0.5, 0.5, 0.5 };
+		List<Double> maximumVelocity = Arrays.asList(mv);
+		
+		SwarmConfiguration swarmConf = new SwarmConfiguration(0.5,1.0,1.0,16.0, 10, maximumVelocity, funcConf);
 		/*
 		// function represents f = x^2 + y^2 + z^2
 		PSOFunction<Double> function = new SumOfSquares(3);
