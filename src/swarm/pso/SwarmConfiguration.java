@@ -14,7 +14,6 @@ public class SwarmConfiguration extends FunctionConfiguration {
 	
 	public SwarmConfiguration(double inertia, double selfWeight, double bestWeight, 
 			double fdrWeight, List<Double> maximumVelocity, FunctionConfiguration functionConf) {
-		
 		super(functionConf);
 		
 		this.inertia = inertia;
@@ -22,6 +21,10 @@ public class SwarmConfiguration extends FunctionConfiguration {
 		this.bestWeight = bestWeight;
 		this.fdrWeight = fdrWeight;
 		this.maximumVelocity = Collections.unmodifiableList(new ArrayList<Double>(maximumVelocity));
+	}
+	
+	public SwarmConfiguration(SwarmConfiguration other) {
+		this(other.inertia, other.selfWeight, other.bestWeight, other.fdrWeight, other.maximumVelocity, other);
 	}
 
 	public final double getInertia() {
