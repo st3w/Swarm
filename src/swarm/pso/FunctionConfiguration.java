@@ -12,6 +12,14 @@ public class FunctionConfiguration {
 	
 	public FunctionConfiguration(int dimensions, PSOFunction<Double> function,
 			List<Double> lowerBounds, List<Double> upperBounds) {
+		
+		if (dimensions != lowerBounds.size() || dimensions != upperBounds.size()) {
+			throw new IllegalArgumentException("Bounds must have size() = dimensions");
+		}
+		if (dimensions != function.getDimensions()) {
+			throw new IllegalArgumentException("Function must have getDimensions() = dimensions");
+		}
+		
 		this.dimensions = dimensions;
 		this.function = function;
 		this.lowerBounds = Collections.unmodifiableList(new ArrayList<Double>(lowerBounds));
@@ -38,4 +46,7 @@ public class FunctionConfiguration {
 		return upperBounds;
 	}
 	
+	public final Double function(List<Double> args) {
+		return function.function(args);
+	}
 }

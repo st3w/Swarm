@@ -50,6 +50,7 @@ public class SwarmConfiguration extends FunctionConfiguration {
 	public final int getNumParticles() {
 		return numParticles;
 	}
+
 	public final List<Double> getMaximumVelocity() {
 		return maximumVelocity;
 	}
