@@ -2,8 +2,27 @@ package swarm.pso;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class SwarmDriver {
+	public static final int DIMENSIONS = 3;
+	private static final double[] LOWER_BOUNDS = {-1.0, -2.0, -3.0};
+	private static final double[] UPPER_BOUNDS = {3.55, 6.22, 1.0};
+	
+	private static final double[] MAX_VELOCITY = {0.5, 0.5, 0.5};
+	
+	public static final double INITIAL_INERTIA = 0.9;
+	public static final double FINAL_INERTIA = 0.4;
+	public static final double SELF_WEIGHT = 1.0;
+	public static final double BEST_WEIGHT = 1.0;
+	public static final double FDR_WEIGHT = 2.0;
+	
+	public static final int NUMBER_PARTICLES = 10;
+	public static final int NUMBER_ITERATIONS = 1000;
+	
+	public static final long SEED = 234568798;
+	public static final boolean USE_SEED = true;
+	
 	// SumOfSquares is a sample PSOFunction for testing purposes. It represents a sum-of-squares function with arbitrary dimensions.
 	// For example, a new SumOfSquares(3) represents the function f = x^2 + y^2 + z^2.
 	static class SumOfSquares extends PSOFunction<Double> {
@@ -37,51 +56,39 @@ public class SwarmDriver {
 	
 	public static void main(String[] args) {
 		// Make a 3 dimensional sum of squares function
-		final int dimensions = 3;
-		PSOFunction<Double> function = new SumOfSquares(dimensions);
+		PSOFunction<Double> function = new SumOfSquares(DIMENSIONS);
 		
 		// Function bounds are a list of parameters
 		List<Double> lowerBounds = Arrays.asList(new Double[function.getDimensions()]);
 		List<Double> upperBounds = Arrays.asList(new Double[function.getDimensions()]);
 		
+		List<Double> maximumVelocity = Arrays.asList(new Double[function.getDimensions()]);
+		
 		// optimize arguments on (-1, 3)
 		for (int i = 0; i < lowerBounds.size(); i++) {
-			lowerBounds.set(i, -1.0);
-			upperBounds.set(i, 3.0);
+			lowerBounds.set(i, LOWER_BOUNDS[i]);
+			upperBounds.set(i, UPPER_BOUNDS[i]);
+			maximumVelocity.set(i, MAX_VELOCITY[i]);
 		}
 		
 		FunctionConfiguration funcConf = new FunctionConfiguration(function.getDimensions(), function, 
 				lowerBounds, upperBounds);
 		
-		Double[] mv = { 0.5, 0.5, 0.5 };
-		List<Double> maximumVelocity = Arrays.asList(mv);
+		SwarmConfiguration swarmConf = new SwarmConfiguration(INITIAL_INERTIA, FINAL_INERTIA, SELF_WEIGHT, BEST_WEIGHT,
+				FDR_WEIGHT, NUMBER_PARTICLES, NUMBER_ITERATIONS, maximumVelocity, funcConf);
 		
-		SwarmConfiguration swarmConf = new SwarmConfiguration(0.5,1.0,1.0,16.0, 10, maximumVelocity, funcConf);
-		
-		SequentialOptimization pso = new SequentialOptimization(swarmConf);
-		List<Double> solution = pso.optimize();
-		
-		System.out.println(solution);
-		
-		/*
-		// function represents f = x^2 + y^2 + z^2
-		PSOFunction<Double> function = new SumOfSquares(3);
-		List<Double> lowerBounds = Arrays.asList(new Double[function.getDimensions()]);
-		List<Double> upperBounds = Arrays.asList(new Double[function.getDimensions()]);
-		// optimize arguments on (-1, 3)
-		for (int i = 0; i < lowerBounds.size(); i++) {
-			lowerBounds.set(i, (double) -1);
-			upperBounds.set(i, (double) 3);
+		Random rand;
+		if (USE_SEED) {
+			rand = new Random(SEED);
+		}
+		else {
+			rand = new Random();
 		}
 		
-		// call the constructor to initialize the optimization class and set up particles
-		SequentialOptimization pso = new SequentialOptimization(function.getDimensions(), function, lowerBounds, upperBounds, 10);
-		
-		// call the optimize method and get the results
+		SequentialOptimization pso = new SequentialOptimization(swarmConf, rand);
 		List<Double> solution = pso.optimize();
 		
 		System.out.println(solution);
 		System.out.println(function.function(solution));
-		*/
 	}
 }

@@ -23,7 +23,7 @@ public class Particle {
 		this.position = new ArrayList<Double>(position);
 		this.velocity = new ArrayList<Double>(velocity);
 		
-		this.bestPosition = new ArrayList<Double>(position);
+		this.bestPosition = new ArrayList<Double>(bestPosition);
 		
 		this.value = value;
 		this.bestValue = bestValue;
