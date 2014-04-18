@@ -25,6 +25,7 @@ public class Logging {
 
         this.particleCount = particleCount;
         this.iterationCount = iterationCount;
+        latestIteration = -1;
     }
 
     public void addParticlePosition(int iteration, int particleNumber, List<Double> bestPosition) {
