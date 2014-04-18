@@ -1,4 +1,4 @@
-package swarm.pso;
+package swarm.pso.model;
 
 import java.util.List;
 

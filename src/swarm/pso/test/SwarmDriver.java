@@ -1,13 +1,18 @@
-package swarm.pso;
+package swarm.pso.test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import swarm.pso.model.PSOFunction;
+import swarm.pso.service.SequentialOptimization;
+import swarm.pso.structures.config.FunctionConfiguration;
+import swarm.pso.structures.config.SwarmConfiguration;
+
 public class SwarmDriver {
 	public static final int DIMENSIONS = 3;
-	private static final double[] LOWER_BOUNDS = {-1.0, -2.0, -3.0};
-	private static final double[] UPPER_BOUNDS = {3.55, 6.22, 1.0};
+	private static final double[] LOWER_BOUNDS = {-5.0, -4.77, -3.0};
+	private static final double[] UPPER_BOUNDS = {3.55, 6.22, 5.0};
 	
 	private static final double[] MAX_VELOCITY = {0.5, 0.5, 0.5};
 	
@@ -15,48 +20,17 @@ public class SwarmDriver {
 	public static final double FINAL_INERTIA = 0.4;
 	public static final double SELF_WEIGHT = 1.0;
 	public static final double BEST_WEIGHT = 1.0;
-	public static final double FDR_WEIGHT = 2.0;
+	public static final double FDR_WEIGHT = 0;
 	
-	public static final int NUMBER_PARTICLES = 10;
+	public static final int NUMBER_PARTICLES = 100;
 	public static final int NUMBER_ITERATIONS = 1000;
 	
 	public static final long SEED = 234568798;
-	public static final boolean USE_SEED = true;
-	
-	// SumOfSquares is a sample PSOFunction for testing purposes. It represents a sum-of-squares function with arbitrary dimensions.
-	// For example, a new SumOfSquares(3) represents the function f = x^2 + y^2 + z^2.
-	static class SumOfSquares extends PSOFunction<Double> {
-		// Dimensions is the number of arguments in the function
-		public final int dimensions;
-		
-		public SumOfSquares(int dimensions) {
-			this.dimensions = dimensions;
-		}
-		
-		// function is the function that accepts the list of numbers and returns the sum of their squares
-		@Override
-		public Double function(List<Double> arguments) {
-			if (arguments.size() != getDimensions()) {
-				throw new IllegalArgumentException("Expected " + dimensions + " doubles");
-			}
-			
-			double sum = 0;
-			for (int i = 0; i < dimensions; i++) {
-				sum += Math.pow(arguments.get(i), 2);
-			}
-			return sum;
-		}
-
-		@Override
-		public int getDimensions() {
-			return dimensions;
-		}
-		
-	}
+	public static final boolean USE_SEED = false;
 	
 	public static void main(String[] args) {
-		// Make a 3 dimensional sum of squares function
-		PSOFunction<Double> function = new SumOfSquares(DIMENSIONS);
+		// Make a function to optimize
+		PSOFunction<Double> function = new Functions.Rosenbrock(DIMENSIONS);
 		
 		// Function bounds are a list of parameters
 		List<Double> lowerBounds = Arrays.asList(new Double[function.getDimensions()]);
@@ -64,7 +38,7 @@ public class SwarmDriver {
 		
 		List<Double> maximumVelocity = Arrays.asList(new Double[function.getDimensions()]);
 		
-		// optimize arguments on (-1, 3)
+		// optimize arguments within bounds
 		for (int i = 0; i < lowerBounds.size(); i++) {
 			lowerBounds.set(i, LOWER_BOUNDS[i]);
 			upperBounds.set(i, UPPER_BOUNDS[i]);

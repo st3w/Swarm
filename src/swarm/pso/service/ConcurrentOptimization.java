@@ -1,9 +1,12 @@
-package swarm.pso;
+package swarm.pso.service;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import swarm.pso.structures.Particle;
+import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
 
 public class ConcurrentOptimization implements SwarmOptimization {
 	private final ConcurrentSwarmConfiguration config;
@@ -157,11 +160,11 @@ public class ConcurrentOptimization implements SwarmOptimization {
 		double bestFDR = 0;
 		for (int q = 0; q < config.getNumParticles(); q++) {
 			//if (q != particle) {
-				double fdr = fdr(particle, q, dimension);
-				if (bestFDRPosition == null || fdr > bestFDR) {
-					bestFDRPosition = getParticle(q).getBestPosition();
-					bestFDR = fdr;
-				}
+			double fdr = fdr(particle, q, dimension);
+			if (bestFDRPosition == null || fdr > bestFDR) {
+				bestFDRPosition = getParticle(q).getBestPosition();
+				bestFDR = fdr;
+			}
 			//}
 		}
 		return bestFDRPosition;

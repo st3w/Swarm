@@ -1,4 +1,4 @@
-package swarm.pso;
+package swarm.pso.service;
 
 import java.util.List;
 

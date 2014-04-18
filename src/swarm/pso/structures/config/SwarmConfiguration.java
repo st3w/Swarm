@@ -1,4 +1,4 @@
-package swarm.pso;
+package swarm.pso.structures.config;
 
 import java.util.ArrayList;
 import java.util.Collections;

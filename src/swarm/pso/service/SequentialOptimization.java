@@ -1,8 +1,11 @@
-package swarm.pso;
+package swarm.pso.service;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+
+import swarm.pso.structures.Particle;
+import swarm.pso.structures.config.SwarmConfiguration;
 
 public class SequentialOptimization implements SwarmOptimization {
 	private final SwarmConfiguration config; // SwarmConfiguration has info about the function and particle behavior

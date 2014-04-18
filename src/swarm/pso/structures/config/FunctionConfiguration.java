@@ -1,8 +1,10 @@
-package swarm.pso;
+package swarm.pso.structures.config;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import swarm.pso.model.PSOFunction;
 
 public class FunctionConfiguration {
 	private final int dimensions;
