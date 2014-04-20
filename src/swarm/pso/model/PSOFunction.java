@@ -7,4 +7,6 @@ public abstract class PSOFunction<V> {
 	public abstract V function(List<V> arguments);
 	
 	public abstract int getDimensions();
+	
+	public abstract V getSolution();
 }

@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import swarm.pso.structures.config.FunctionConfiguration;
+import swarm.pso.structures.config.SwarmConfiguration;
+
 public class Logging {
     List<List<Double>> particlePositions;
         // 2D array represented in 1D, iteration x particle. ex. to get particle 4 for 2nd iteration, 2*particle count + 4
@@ -16,15 +19,30 @@ public class Logging {
 
     int particleCount;
     int iterationCount;
+    
+    private final FunctionConfiguration config;
+    
+    Object iterationGuard = new Object();
     int latestIteration;
-    public Logging(int particleCount, int iterationCount) {
+    public Logging(SwarmConfiguration config) {
+    	this.config = config;
+        this.particleCount = config.getNumParticles();
+        this.iterationCount = config.getNumIterations();
+    	
         particlePositions = new ArrayList<List<Double>>(particleCount * iterationCount);
+        for (int i = 0; i < particleCount * iterationCount; i++) {
+        	particlePositions.add(null);
+        }
         bestPositions = new ArrayList<List<Double>>(iterationCount);
+        for (int i = 0; i < iterationCount; i++) {
+        	bestPositions.add(null);
+        }
         times = new ArrayList<Long>(iterationCount);
-        startTime = System.currentTimeMillis();
+        for (int i = 0; i < iterationCount; i++) {
+        	times.add(null);
+        }
+        startTime = System.nanoTime();
 
-        this.particleCount = particleCount;
-        this.iterationCount = iterationCount;
         latestIteration = -1;
     }
 
@@ -36,10 +54,12 @@ public class Logging {
     }
     public void addTime(int iteration, long time) {
         times.set(iteration, time - startTime);
-        if(iteration > latestIteration) latestIteration = iteration;
+    	synchronized(iterationGuard) {
+    		if(iteration > latestIteration) latestIteration = iteration;
+    	}
     }
     public void setStartTime() {
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
     }
 
     public List<Double> getParticlePosition(int iteration, int particleNumber) {
@@ -55,7 +75,9 @@ public class Logging {
     }
 
     public int getLatestIteration() {
-        return latestIteration;
+    	synchronized(iterationGuard) {
+    		return latestIteration;
+    	}
     }
 
     public void writeToFile() {
@@ -70,7 +92,7 @@ public class Logging {
 
             FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
-            for(int i = 1; i <= times.size(); i++) {
+            for(int i = 0; i < times.size(); i++) {
                 bw.write(String.format("%d\n", times.get(i)));
             }
             bw.close();
@@ -79,28 +101,38 @@ public class Logging {
 
     private void writeBestPositionsToFile() {
         File file = new File("bestposition.txt");
+        File file2 = new File("errorvals.txt");
         try {
             if (!file.exists()) file.createNewFile();
+            if (!file2.exists()) file2.createNewFile();
 
             FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
-            for(int i = 1; i <= bestPositions.size(); i++) {
+            
+            FileWriter fw2 = new FileWriter(file2.getAbsoluteFile());
+            BufferedWriter bw2 = new BufferedWriter(fw2);
+            
+            for(int i = 0; i < bestPositions.size(); i++) {
                 //bw.write(String.format("%d,", i));
+                bw2.write(Double.toString(config.function(bestPositions.get(i))-config.getSolution()));
                 for(int currentDimension = 0; currentDimension < bestPositions.get(i).size(); currentDimension++) {
-                    bw.write(String.format("%f", bestPositions.get(i).get(currentDimension)));
-                    if(i < bestPositions.size()) {
+                    bw.write(Double.toString(bestPositions.get(i).get(currentDimension)));
+                    if(currentDimension < bestPositions.get(i).size() - 1) {
                         bw.write(",");
-                    }
-                    else {
-                        bw.write("\n");
-                    }
+                    } 
+                }
+                
+                if (i < bestPositions.size() - 1) {
+                    bw.write("\n");
+                    bw2.write("\n");
                 }
             }
             bw.close();
+            bw2.close();
         } catch(IOException e) { e.printStackTrace(); }
     }
 
-    private void writeParticlePositionsToFile() {
+    /*private void writeParticlePositionsToFile() {
         File file = new File("particles.txt");
         try {
             if (!file.exists()) file.createNewFile();
@@ -112,5 +144,5 @@ public class Logging {
             }
             bw.close();
         } catch(IOException e) { e.printStackTrace(); }
-    }
+    }*/
 }

@@ -34,6 +34,11 @@ public class Functions {
 		public int getDimensions() {
 			return dimensions;
 		}
+
+		@Override
+		public Double getSolution() {
+			return MINIMUM;
+		}
 	}
 	
 	public static class Ackley extends PSOFunction<Double> {
@@ -62,6 +67,11 @@ public class Functions {
 		public int getDimensions() {
 			return dimensions;
 		}
+
+		@Override
+		public Double getSolution() {
+			return MINIMUM;
+		}
 	}
 	
 	public static class Rosenbrock extends PSOFunction<Double> {
@@ -87,6 +97,11 @@ public class Functions {
 		@Override
 		public int getDimensions() {
 			return dimensions;
+		}
+
+		@Override
+		public Double getSolution() {
+			return MINIMUM;
 		}
 	}
 }

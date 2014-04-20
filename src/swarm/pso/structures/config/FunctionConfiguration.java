@@ -51,4 +51,8 @@ public class FunctionConfiguration {
 	public final Double function(List<Double> args) {
 		return function.function(args);
 	}
+
+	public Double getSolution() {
+		return function.getSolution();
+	}
 }
