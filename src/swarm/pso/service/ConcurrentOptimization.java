@@ -58,6 +58,7 @@ public class ConcurrentOptimization implements SwarmOptimization {
 
     synchronized public int getIteration() { return iteration; }
     synchronized public int getParticleNumber() { return particleNumber; }
+	synchronized public void incrementParticleNumber() { particleNumber += 1 % config.getNumParticles(); }
 	
 	private void updateGlobalBest(Particle p) {
 		if (bestPosition == null || p.getValue() < bestValue) {
@@ -134,7 +135,12 @@ public class ConcurrentOptimization implements SwarmOptimization {
 		
 		//System.out.println("Particle: " + position + ", " + velocity + ", " + function.function(position));
 		try {
-			while(getParticleNumber() == particle)
+			while(getParticleNumber() != particle) {
+				updateLock.lock();
+			}
+			setParticle(particle, new Particle(position, velocity, bestPosition, config.function(position), config.function(bestPosition)));
+			updateGlobalBest(getParticle(particle));
+			incrementParticleNumber();
 		}
 		finally {
 			updateLock.unlock();
