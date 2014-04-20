@@ -3,7 +3,11 @@ package swarm.pso.service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import swarm.pso.structures.Particle;
 import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
@@ -20,6 +24,12 @@ public class ConcurrentOptimization implements SwarmOptimization {
 	private AtomicInteger currentIteration = new AtomicInteger(0);
 	
 	private final Random rand;
+
+    private int iteration;
+    private int particleNumber;
+
+	private final ReentrantLock updateLock = new ReentrantLock();  // Lock used for updating bestPosition and bestValue
+	//private Object loopLock;    // Lock used for updating iteration and particleNumber
 	
 	public ConcurrentOptimization(ConcurrentSwarmConfiguration config) {
 		this(config, new Random());
@@ -45,6 +55,9 @@ public class ConcurrentOptimization implements SwarmOptimization {
 			updateGlobalBest(getParticle(p));
 		}
 	}
+
+    synchronized public int getIteration() { return iteration; }
+    synchronized public int getParticleNumber() { return particleNumber; }
 	
 	private void updateGlobalBest(Particle p) {
 		if (bestPosition == null || p.getValue() < bestValue) {
@@ -102,7 +115,14 @@ public class ConcurrentOptimization implements SwarmOptimization {
 	}
 
 	private void updateParticleList() {
-		for (int p = 0; p < config.getNumParticles(); p++) {
+        ExecutorService es = Executors.newFixedThreadPool(config.getNumThreads());
+        for (int p = 0; p < config.getNumParticles(); p++) {
+            final int particleNumber = p;
+            es.execute(new Runnable() {
+                public void run() {
+                    updateParticle(particleNumber);
+                }
+            });
 			updateParticle(p);
 		}
 	}
@@ -113,8 +133,12 @@ public class ConcurrentOptimization implements SwarmOptimization {
 		List<Double> bestPosition = selectBestPosition(particle, position);
 		
 		//System.out.println("Particle: " + position + ", " + velocity + ", " + function.function(position));
-		setParticle(particle, new Particle(position, velocity, bestPosition, config.function(position), config.function(bestPosition)));
-		updateGlobalBest(getParticle(particle));
+		try {
+			while(getParticleNumber() == particle)
+		}
+		finally {
+			updateLock.unlock();
+		}
 		
 	}
 
