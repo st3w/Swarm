@@ -106,7 +106,6 @@ public class SwarmDriver {
 				FDR_WEIGHT,  numParticles, numIterations, maximumVelocity, funcConf);
 		
 		ConcurrentSwarmConfiguration concurrentConfig = new ConcurrentSwarmConfiguration(swarmConf, Runtime.getRuntime().availableProcessors()-1);
-		
 		Random rand1;
 		Random rand2;
 		long seed;
@@ -119,14 +118,12 @@ public class SwarmDriver {
 		rand1 = new Random(seed);
 		rand2 = new Random(seed);
 		
-		Logging log0 = new Logging(swarmConf);
 		Logging log1 = new Logging(swarmConf);
 		Logging log2 = new Logging(concurrentConfig);
-		
-		//setupLogPainter(log1, swarmConf);
-		
-		SequentialOptimization pso0 = new SequentialOptimization(swarmConf, rand1, log1);
-		List<Double> solution0;
+
+		if (animationTimeout > 0) {
+			setupLogPainter(log1, swarmConf);
+		}
 		
 		SequentialOptimization pso1 = new SequentialOptimization(swarmConf, rand1, log1);
 		List<Double> solution1;
