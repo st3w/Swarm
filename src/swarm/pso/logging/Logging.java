@@ -80,13 +80,14 @@ public class Logging {
     	}
     }
 
-    public void writeToFile() {
-        writeBestPositionsToFile();
-        writeTimesToFile();
+    public void writeToFile(String prefix) {
+        writeBestPositionsToFile(prefix);
+        writeErrorsToFile(prefix);
+        writeTimesToFile(prefix);
     }
 
-    private void writeTimesToFile() {
-        File file = new File("times.txt");
+    private void writeTimesToFile(String prefix) {
+        File file = new File(prefix + "times.txt");
         try {
             if (!file.exists()) file.createNewFile();
 
@@ -99,22 +100,36 @@ public class Logging {
         } catch(IOException e) { e.printStackTrace(); }
     }
 
-    private void writeBestPositionsToFile() {
-        File file = new File("bestposition.txt");
-        File file2 = new File("errorvals.txt");
+    private void writeErrorsToFile(String prefix) {
+        File file = new File(prefix + "errorvals.txt");
         try {
             if (!file.exists()) file.createNewFile();
-            if (!file2.exists()) file2.createNewFile();
+            
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            
+            for(int i = 0; i < bestPositions.size(); i++) {
+                //bw.write(String.format("%d,", i));
+                bw.write(Double.toString(config.function(bestPositions.get(i))-config.getSolution()));
+                
+                if (i < bestPositions.size() - 1) {
+                    bw.write("\n");
+                }
+            }
+            bw.close();
+        } catch(IOException e) { e.printStackTrace(); }
+    }
+
+    private void writeBestPositionsToFile(String prefix) {
+        File file = new File(prefix + "bestposition.txt");
+        try {
+            if (!file.exists()) file.createNewFile();
 
             FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
             
-            FileWriter fw2 = new FileWriter(file2.getAbsoluteFile());
-            BufferedWriter bw2 = new BufferedWriter(fw2);
-            
             for(int i = 0; i < bestPositions.size(); i++) {
                 //bw.write(String.format("%d,", i));
-                bw2.write(Double.toString(config.function(bestPositions.get(i))-config.getSolution()));
                 for(int currentDimension = 0; currentDimension < bestPositions.get(i).size(); currentDimension++) {
                     bw.write(Double.toString(bestPositions.get(i).get(currentDimension)));
                     if(currentDimension < bestPositions.get(i).size() - 1) {
@@ -124,11 +139,9 @@ public class Logging {
                 
                 if (i < bestPositions.size() - 1) {
                     bw.write("\n");
-                    bw2.write("\n");
                 }
             }
             bw.close();
-            bw2.close();
         } catch(IOException e) { e.printStackTrace(); }
     }
 
