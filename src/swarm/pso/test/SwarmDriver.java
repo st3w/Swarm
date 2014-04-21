@@ -14,6 +14,7 @@ import javax.swing.Timer;
 import swarm.pso.logging.Logging;
 import swarm.pso.model.PSOFunction;
 import swarm.pso.service.SequentialOptimization;
+import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
 import swarm.pso.structures.config.FunctionConfiguration;
 import swarm.pso.structures.config.SwarmConfiguration;
 import swarm.pso.ui.LogPainter;
@@ -29,13 +30,13 @@ public class SwarmDriver {
 	public static final double FINAL_INERTIA = 0.4;
 	public static final double SELF_WEIGHT = 1;
 	public static final double BEST_WEIGHT = 1;
-	public static final double FDR_WEIGHT = 0;
+	public static final double FDR_WEIGHT = 2;
 	
 	public static final int NUMBER_PARTICLES = 10;
 	public static final int NUMBER_ITERATIONS = 1000;
 	
-	public static final long SEED = 234568798;
-	public static final boolean USE_SEED = false;
+	public static final long SEED = 7100555322108534535L;
+	public static final boolean USE_SEED = true;
 	
 	private static Timer timer;
 	
@@ -62,25 +63,40 @@ public class SwarmDriver {
 		SwarmConfiguration swarmConf = new SwarmConfiguration(INITIAL_INERTIA, FINAL_INERTIA, SELF_WEIGHT, BEST_WEIGHT,
 				FDR_WEIGHT, NUMBER_PARTICLES, NUMBER_ITERATIONS, maximumVelocity, funcConf);
 		
-		Random rand;
+		ConcurrentSwarmConfiguration concurrentConfig = new ConcurrentSwarmConfiguration(swarmConf, Runtime.getRuntime().availableProcessors()-1);
+		
+		Random rand1;
+		Random rand2;
+		long seed;
 		if (USE_SEED) {
-			rand = new Random(SEED);
+			seed = SEED;
 		}
 		else {
-			rand = new Random();
+			seed = (new Random()).nextLong();
 		}
+		rand1 = new Random(seed);
+		rand2 = new Random(seed);
 		
-		Logging log = new Logging(swarmConf);
+		Logging log1 = new Logging(swarmConf);
+		Logging log2 = new Logging(concurrentConfig);
 		
-		setupLogPainter(log, swarmConf);
+		setupLogPainter(log1, swarmConf);
 		
-		SequentialOptimization pso = new SequentialOptimization(swarmConf, rand, log);
+		SequentialOptimization pso = new SequentialOptimization(swarmConf, rand1, log1);
 		List<Double> solution = pso.optimize();
 		
-		log.writeToFile();
+		SequentialOptimization pso2 = new SequentialOptimization(swarmConf, rand2, log2);
+		List<Double> solution2 = pso2.optimize();
+		
+		log1.writeToFile("SeqFDR");
+		log2.writeToFile("ConFDR");
+		System.out.println(seed);
 		
 		System.out.println(solution);
 		System.out.println(function.function(solution));
+		
+		System.out.println(solution2);
+		System.out.println(function.function(solution2));
 		timer.stop();
 	}
 

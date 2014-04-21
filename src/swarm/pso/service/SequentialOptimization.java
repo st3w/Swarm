@@ -97,11 +97,11 @@ public class SequentialOptimization implements SwarmOptimization {
 		updateInertia(iteration+1);
 		log.addBestPosition(iteration, bestPosition);
 		log.addTime(iteration, System.nanoTime());
-//		try {
-//			Thread.sleep(30);
-//		} catch (InterruptedException e) {
-//			
-//		}
+		try {
+			Thread.sleep(30);
+		} catch (InterruptedException e) {
+			
+		}
 	}
 	
 	private void updateInertia(int iteration) {

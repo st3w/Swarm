@@ -16,7 +16,7 @@ import swarm.pso.structures.config.SwarmConfiguration;
 @SuppressWarnings("serial")
 public class LogPainter extends JLabel {
 	public static final Color COLOR = Color.RED;
-	public static final int RADIUS = 1;
+	public static final int RADIUS = 2;
 	public static final int WIDTH = 500;
 	public static final int HEIGHT = 500;
 

@@ -6,8 +6,6 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-
 import swarm.pso.logging.Logging;
 import swarm.pso.structures.Particle;
 import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
@@ -111,7 +109,7 @@ public class ConcurrentOptimization implements SwarmOptimization {
 	}
 
 	private void updateParticleList(final int iteration) {
-        ExecutorService es = Executors.newFixedThreadPool(config.getNumThreads());
+        ExecutorService es = Executors.newCachedThreadPool();
         for (int p = 0; p < config.getNumParticles(); p++) {
             final int particleNumber = p;
             final double inertia = this.inertia;
@@ -132,6 +130,11 @@ public class ConcurrentOptimization implements SwarmOptimization {
 		updateInertia(iteration+1);
 		log.addBestPosition(iteration, bestPosition);
 		log.addTime(iteration, System.nanoTime());
+		//		try {
+		//		Thread.sleep(30);
+		//	} catch (InterruptedException e) {
+		//		
+		//	}
 	}
 	
 	private void updateInertia(int iteration) {
@@ -183,33 +186,76 @@ public class ConcurrentOptimization implements SwarmOptimization {
 		List<Double> position = getParticle(particle).getPosition();
 		List<Double> selfBestPosition = getParticle(particle).getBestPosition();
 		for (int d = 0; d < config.getDimensions(); d++) {
-			List<Double> fdrPosition = bestFitnessDistance(particle, d);
-			double dVelocity = config.getInertia() * oldVelocity.get(d) + 
-					config.getSelfWeight() * (selfBestPosition.get(d) - position.get(d)) + 
-					config.getBestWeight() * (bestPosition.get(d) - position.get(d)) + 
-					config.getFdrWeight() * (fdrPosition.get(d) - position.get(d));
-			velocity.set(d, Math.min(config.getMaximumVelocity().get(d), Math.max(-config.getMaximumVelocity().get(d), dVelocity)));
+			List<Double> fdrPosition;
+			if (config.getFdrWeight() != 0.0) {
+				fdrPosition = bestFitnessDistance(particle, d);
+			}
+			else {
+				fdrPosition = selfBestPosition;
+			}
+			
+			synchronized(this) {
+				while (particleNumber < particle) {
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						
+					}
+				}
+			}
+			
+			double dVelocity = inertia * oldVelocity.get(d) + 
+					rand.nextDouble() * config.getSelfWeight() * (selfBestPosition.get(d) - position.get(d)) + 
+					rand.nextDouble() * config.getBestWeight() * (bestPosition.get(d) - position.get(d)) + 
+					rand.nextDouble() * config.getFdrWeight() * (fdrPosition.get(d) - position.get(d));
+			velocity.set(d, Math.signum(dVelocity) * Math.min(config.getMaximumVelocity().get(d), Math.abs(dVelocity)));
 		}
 		return velocity;
 	}
 
 	private List<Double> bestFitnessDistance(int particle, int dimension) {
-		List<Double> bestFDRPosition = null;
-		double bestFDR = 0;
-		for (int q = 0; q < config.getNumParticles(); q++) {
-			//if (q != particle) {
+		if (particle+1 == config.getNumParticles()) {
+			synchronized(this) {
+				while (particleNumber == 0) {
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						
+					}
+				}
+			}
+		}
+		
+		List<Double> bestFDRPosition = getParticle((particle+1)%config.getNumParticles()).getBestPosition();
+		double bestFDR = fdr(particle, (particle+1)%config.getNumParticles(), dimension);
+		for (int q = particle+1; q < config.getNumParticles(); q++) {
 			double fdr = fdr(particle, q, dimension);
-			if (bestFDRPosition == null || fdr > bestFDR) {
+			if (fdr > bestFDR) {
 				bestFDRPosition = getParticle(q).getBestPosition();
 				bestFDR = fdr;
 			}
-			//}
+		}
+		for (int q = 0; q < particle; q++) {
+			synchronized(this) {
+				while (particleNumber <= q) {
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						
+					}
+				}
+			}
+			double fdr = fdr(particle, q, dimension);
+			if (fdr > bestFDR) {
+				bestFDRPosition = getParticle(q).getBestPosition();
+				bestFDR = fdr;
+			}
 		}
 		return bestFDRPosition;
 	}
-
+	
 	private double fdr(int currentParticle, int foreignParticle, int dimension) {
-		double fitness = getParticle(currentParticle).getValue() - getParticle(foreignParticle).getBestValue();
+		double fitness = -(getParticle(foreignParticle).getBestValue() - getParticle(currentParticle).getValue());
 		double distance = Math.abs(
 				getParticle(foreignParticle).getBestPosition().get(dimension) - 
 				getParticle(currentParticle).getPosition().get(dimension));
@@ -220,5 +266,4 @@ public class ConcurrentOptimization implements SwarmOptimization {
 			return Double.MAX_VALUE;
 		}
 	}
-
 }
