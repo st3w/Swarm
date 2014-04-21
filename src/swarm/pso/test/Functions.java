@@ -1,5 +1,6 @@
 package swarm.pso.test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import swarm.pso.model.PSOFunction;
@@ -11,9 +12,29 @@ public class Functions {
 		// Dimensions is the number of arguments in the function
 		public final int dimensions;
 		public final double MINIMUM = 0;
+		private final double lowerBound = -10.0;
+		private final double upperBound = 10.0;
 		
 		public Sphere(int dimensions) {
 			this.dimensions = dimensions;
+		}
+		
+		public List<Double> getLowerBounds() {
+			List<Double> bounds = Arrays.asList(new Double[dimensions]);
+			
+			for (int i = 0; i < dimensions; i++)
+				bounds.set(i, lowerBound);
+			
+			return bounds;
+		}
+		
+		public List<Double> getUpperBounds() {
+			List<Double> bounds = Arrays.asList(new Double[dimensions]);
+			
+			for (int i = 0; i < upperBound; i++)
+				bounds.set(i, 10.0);
+			
+			return bounds;
 		}
 		
 		// function is the function that accepts the list of numbers and returns the sum of their squares
@@ -39,12 +60,15 @@ public class Functions {
 		public Double getSolution() {
 			return MINIMUM;
 		}
+		
 	}
 	
 	public static class Ackley extends PSOFunction<Double> {
 		// Dimensions is the number of arguments in the function
 		public final int dimensions;
 		public static final double MINIMUM = 0;
+		private final double lowerBound = -4.0;
+		private final double upperBound = 4.0;
 		
 		public Ackley(int dimensions) {
 			this.dimensions = dimensions;
@@ -72,12 +96,32 @@ public class Functions {
 		public Double getSolution() {
 			return MINIMUM;
 		}
+		
+		public List<Double> getLowerBounds() {
+			List<Double> bounds = Arrays.asList(new Double[dimensions]);
+			
+			for (int i = 0; i < dimensions; i++)
+				bounds.set(i, lowerBound);
+			
+			return bounds;
+		}
+		
+		public List<Double> getUpperBounds() {
+			List<Double> bounds = Arrays.asList(new Double[dimensions]);
+			
+			for (int i = 0; i < upperBound; i++)
+				bounds.set(i, 10.0);
+			
+			return bounds;
+		}
 	}
 	
 	public static class Rosenbrock extends PSOFunction<Double> {
 		// Dimensions is the number of arguments in the function
 		public final int dimensions;
 		public static final double MINIMUM = 0;
+		private final double lowerBound = -10.0;
+		private final double upperBound = 10.0;
 		
 		public Rosenbrock(int dimensions) {
 			this.dimensions = dimensions;
@@ -102,6 +146,24 @@ public class Functions {
 		@Override
 		public Double getSolution() {
 			return MINIMUM;
+		}
+		
+		public List<Double> getLowerBounds() {
+			List<Double> bounds = Arrays.asList(new Double[dimensions]);
+			
+			for (int i = 0; i < dimensions; i++)
+				bounds.set(i, lowerBound);
+			
+			return bounds;
+		}
+		
+		public List<Double> getUpperBounds() {
+			List<Double> bounds = Arrays.asList(new Double[dimensions]);
+			
+			for (int i = 0; i < upperBound; i++)
+				bounds.set(i, 10.0);
+			
+			return bounds;
 		}
 	}
 }

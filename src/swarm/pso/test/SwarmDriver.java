@@ -21,10 +21,10 @@ import swarm.pso.ui.LogPainter;
 
 public class SwarmDriver {
 	public static final int DIMENSIONS = 2;
-	private static final double[] LOWER_BOUNDS = {-10, -10};
-	private static final double[] UPPER_BOUNDS = {10, 10};
+	//private static final double[] LOWER_BOUNDS = {-10, -10};
+	//private static final double[] UPPER_BOUNDS = {10, 10};
 	
-	private static final double[] MAX_VELOCITY = {Math.abs(UPPER_BOUNDS[0]-LOWER_BOUNDS[0]), Math.abs(UPPER_BOUNDS[1]-LOWER_BOUNDS[1])};
+	//private static final double[] MAX_VELOCITY = {Math.abs(UPPER_BOUNDS[0]-LOWER_BOUNDS[0]), Math.abs(UPPER_BOUNDS[1]-LOWER_BOUNDS[1])};
 	
 	public static final double INITIAL_INERTIA = 0.9;
 	public static final double FINAL_INERTIA = 0.4;
@@ -45,23 +45,20 @@ public class SwarmDriver {
 		PSOFunction<Double> function = new Functions.Rosenbrock(DIMENSIONS);
 		
 		// Function bounds are a list of parameters
-		List<Double> lowerBounds = Arrays.asList(new Double[function.getDimensions()]);
-		List<Double> upperBounds = Arrays.asList(new Double[function.getDimensions()]);
 		
 		List<Double> maximumVelocity = Arrays.asList(new Double[function.getDimensions()]);
 		
 		// optimize arguments within bounds
-		for (int i = 0; i < lowerBounds.size(); i++) {
-			lowerBounds.set(i, LOWER_BOUNDS[i]);
-			upperBounds.set(i, UPPER_BOUNDS[i]);
-			maximumVelocity.set(i, MAX_VELOCITY[i]);
+		for (int i = 0; i < function.getDimensions(); i++) {
+			maximumVelocity.set(i, 
+					Math.abs(function.getUpperBounds().get(i)-function.getLowerBounds().get(i)));
 		}
 		
 		FunctionConfiguration funcConf = new FunctionConfiguration(function.getDimensions(), function, 
-				lowerBounds, upperBounds);
+				function.getLowerBounds(), function.getUpperBounds());
 		
 		SwarmConfiguration swarmConf = new SwarmConfiguration(INITIAL_INERTIA, FINAL_INERTIA, SELF_WEIGHT, BEST_WEIGHT,
-				FDR_WEIGHT, NUMBER_PARTICLES, NUMBER_ITERATIONS, maximumVelocity, funcConf);
+				FDR_WEIGHT,  NUMBER_PARTICLES, NUMBER_ITERATIONS, maximumVelocity, funcConf);
 		
 		ConcurrentSwarmConfiguration concurrentConfig = new ConcurrentSwarmConfiguration(swarmConf, Runtime.getRuntime().availableProcessors()-1);
 		

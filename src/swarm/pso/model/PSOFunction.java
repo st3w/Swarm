@@ -9,4 +9,8 @@ public abstract class PSOFunction<V> {
 	public abstract int getDimensions();
 	
 	public abstract V getSolution();
+	
+	public abstract List<V> getLowerBounds();
+	
+	public abstract List<V> getUpperBounds();
 }
