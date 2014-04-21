@@ -13,7 +13,7 @@ import javax.swing.Timer;
 
 import swarm.pso.logging.Logging;
 import swarm.pso.model.PSOFunction;
-import swarm.pso.service.WrapAllOptimization;
+import swarm.pso.service.ParticleParallelOptimization;
 import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
 import swarm.pso.structures.config.FunctionConfiguration;
 import swarm.pso.structures.config.SwarmConfiguration;
@@ -119,13 +119,15 @@ public class MainDriver {
 			setupLogPainter(log, concurrentConfig);
 		}
 		
-		WrapAllOptimization pso = new WrapAllOptimization(concurrentConfig, rand, log);
+		ParticleParallelOptimization pso = new ParticleParallelOptimization(concurrentConfig, rand, log);
 		List<Double> solution;
 		
 		if (animationTimeout > 0) 
 			solution = pso.optimize(animationTimeout);
 		else 
 			solution = pso.optimize();
+
+		log.writeToFile("mainResults_");
 		
 		System.out.println(solution);
 		System.out.println(function.function(solution));

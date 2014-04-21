@@ -87,7 +87,7 @@ public class WrapperOptimization implements SwarmOptimization {
 		return velocity;
 	}
 	
-	private void updateGlobalBest(Particle p) {
+	private synchronized void updateGlobalBest(Particle p) {
 		if (bestPosition == null || p.getValue() < bestValue) {
 			bestPosition = p.getPosition();
 			bestValue = p.getValue();
@@ -165,7 +165,7 @@ public class WrapperOptimization implements SwarmOptimization {
 	}
 	
 	private void updateParticle(int iteration, int particle, double inertia) {
-		List<Double> velocity = calculateVelocity(particle);
+		List<Double> velocity = calculateVelocity(particle, inertia);
 		List<Double> position = calculatePosition(particle, velocity);
 		List<Double> bestPosition = selectBestPosition(particle, position);
 		
@@ -202,7 +202,7 @@ public class WrapperOptimization implements SwarmOptimization {
 		return position;
 	}
 
-	private List<Double> calculateVelocity(int particle) {
+	private List<Double> calculateVelocity(int particle, double inertia) {
 		List<Double> velocity = Arrays.asList(new Double[config.getDimensions()]);
 		List<Double> oldVelocity = getParticle(particle).getVelocity();
 		List<Double> position = getParticle(particle).getPosition();

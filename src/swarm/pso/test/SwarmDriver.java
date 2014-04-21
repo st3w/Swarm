@@ -13,8 +13,8 @@ import javax.swing.Timer;
 
 import swarm.pso.logging.Logging;
 import swarm.pso.model.PSOFunction;
+import swarm.pso.service.ParticleParallelOptimization;
 import swarm.pso.service.SequentialOptimization;
-import swarm.pso.service.WrapAllOptimization;
 import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
 import swarm.pso.structures.config.FunctionConfiguration;
 import swarm.pso.structures.config.SwarmConfiguration;
@@ -133,7 +133,7 @@ public class SwarmDriver {
 		else 
 			solution1 = pso1.optimize();
 		
-		WrapAllOptimization pso2 = new WrapAllOptimization(concurrentConfig, rand2, log2);
+		ParticleParallelOptimization pso2 = new ParticleParallelOptimization(concurrentConfig, rand2, log2);
 		List<Double> solution2 = pso2.optimize();
 		
 		log1.writeToFile("SeqFDR");

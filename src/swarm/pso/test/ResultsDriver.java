@@ -6,8 +6,8 @@ import java.util.Random;
 
 import swarm.pso.logging.Logging;
 import swarm.pso.model.PSOFunction;
+import swarm.pso.service.ParticleParallelOptimization;
 import swarm.pso.service.SequentialOptimization;
-import swarm.pso.service.WrapAllOptimization;
 import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
 import swarm.pso.structures.config.FunctionConfiguration;
 import swarm.pso.structures.config.SwarmConfiguration;
@@ -25,7 +25,7 @@ public class ResultsDriver {
 	public static final double BEST_WEIGHT = 1;
 	public static final double FDR_WEIGHT = 2;
 	
-	public static final int NUMBER_PARTICLES = 10;
+	public static final int NUMBER_PARTICLES = 100;
 	public static final int NUMBER_ITERATIONS = 1000;
 	
 	public static final long SEED = 7100555322108534535L;
@@ -95,7 +95,7 @@ public class ResultsDriver {
 		SwarmConfiguration swarmConf = new SwarmConfiguration(INITIAL_INERTIA, FINAL_INERTIA, SELF_WEIGHT, BEST_WEIGHT,
 				FDR_WEIGHT,  numParticles, numIterations, maximumVelocity, funcConf);
 		
-		ConcurrentSwarmConfiguration concurrentConfig = new ConcurrentSwarmConfiguration(swarmConf, Runtime.getRuntime().availableProcessors()-1);
+		ConcurrentSwarmConfiguration concurrentConfig = new ConcurrentSwarmConfiguration(swarmConf, Runtime.getRuntime().availableProcessors());
 		for (int i = 0; i < 10; i++) {
 			Random rand1;
 			Random rand2;
@@ -117,7 +117,7 @@ public class ResultsDriver {
 			
 			solution1 = pso1.optimize();
 			
-			WrapAllOptimization pso2 = new WrapAllOptimization(concurrentConfig, rand2, log2);
+			ParticleParallelOptimization pso2 = new ParticleParallelOptimization(concurrentConfig, rand2, log2);
 			List<Double> solution2 = pso2.optimize();
 			
 			log1.writeToFile("SeqFDR" + i);
