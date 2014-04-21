@@ -31,8 +31,8 @@ public class Functions {
 		public List<Double> getUpperBounds() {
 			List<Double> bounds = Arrays.asList(new Double[dimensions]);
 			
-			for (int i = 0; i < upperBound; i++)
-				bounds.set(i, 10.0);
+			for (int i = 0; i < dimensions; i++)
+				bounds.set(i, upperBound);
 			
 			return bounds;
 		}
@@ -109,8 +109,8 @@ public class Functions {
 		public List<Double> getUpperBounds() {
 			List<Double> bounds = Arrays.asList(new Double[dimensions]);
 			
-			for (int i = 0; i < upperBound; i++)
-				bounds.set(i, 10.0);
+			for (int i = 0; i < dimensions; i++)
+				bounds.set(i, upperBound);
 			
 			return bounds;
 		}
@@ -160,8 +160,8 @@ public class Functions {
 		public List<Double> getUpperBounds() {
 			List<Double> bounds = Arrays.asList(new Double[dimensions]);
 			
-			for (int i = 0; i < upperBound; i++)
-				bounds.set(i, 10.0);
+			for (int i = 0; i < dimensions; i++)
+				bounds.set(i, upperBound);
 			
 			return bounds;
 		}
