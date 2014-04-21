@@ -8,12 +8,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import swarm.pso.logging.Logging;
 import swarm.pso.structures.Particle;
+import swarm.pso.structures.ParticleWrapper;
 import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
 
-public class ConcurrentOptimization implements SwarmOptimization {
+public class WrapAllOptimization implements SwarmOptimization {
 	private final ConcurrentSwarmConfiguration config;
 	
-	private final List<Particle> particles;
+	private final List<ParticleWrapper> particles;
 	
 	private List<Double> bestPosition = null; // the parameters that give the best known value
 	private double bestValue; // the best known value of the function
@@ -25,23 +26,23 @@ public class ConcurrentOptimization implements SwarmOptimization {
 	private final Logging log;
 
     //private int iteration;
-    private int particleNumber;
+    //private int particleNumber;
 
 	//private final ReentrantLock updateLock = new ReentrantLock();  // Lock used for updating bestPosition and bestValue
 	//private Object loopLock;    // Lock used for updating iteration and particleNumber
 	
-	public ConcurrentOptimization(ConcurrentSwarmConfiguration config, Logging log) {
+	public WrapAllOptimization(ConcurrentSwarmConfiguration config, Logging log) {
 		this(config, new Random(), log);
 	}
 	
-	public ConcurrentOptimization(ConcurrentSwarmConfiguration config, Random rand, Logging log) {
+	public WrapAllOptimization(ConcurrentSwarmConfiguration config, Random rand, Logging log) {
 		this.config = config;
 		this.rand = rand;
 		this.log = log;
 		
 		log.setStartTime();
 		
-		particles = Arrays.asList(new Particle[config.getNumParticles()]);
+		particles = Arrays.asList(new ParticleWrapper[config.getNumParticles()]);
 
 		for (int p = 0; p < config.getNumParticles(); p++) {
 			List<Double> initialPosition = initialPosition();
@@ -59,8 +60,8 @@ public class ConcurrentOptimization implements SwarmOptimization {
 	}
 
     //synchronized public int getIteration() { return iteration; }
-    synchronized public int getParticleNumber() { return particleNumber; }
-	synchronized public void incrementParticleNumber() { particleNumber += 1 % config.getNumParticles(); }
+    //synchronized public int getParticleNumber() { return particleNumber; }
+	//synchronized public void incrementParticleNumber() { particleNumber += 1 % config.getNumParticles(); }
 
 	private List<Double> initialPosition() {
 		List<Double> position = Arrays.asList(new Double[config.getDimensions()]);
@@ -94,11 +95,22 @@ public class ConcurrentOptimization implements SwarmOptimization {
 	}
 
 	private Particle getParticle(int index) {
-		return particles.get(index);
+		ParticleWrapper pw = particles.get(index);
+		if (pw == null) {
+			return null;
+		}
+		else {
+			return pw.getParticle();
+		}
 	}
 	
 	private void setParticle(int index, Particle particle) {
-		particles.set(index, particle);
+		ParticleWrapper pw = particles.get(index);
+		if (pw == null) {
+			pw = new ParticleWrapper();
+			particles.set(index, pw);
+		}
+		pw.setParticle(particle);
 	}
 	
 	@Override
@@ -112,15 +124,23 @@ public class ConcurrentOptimization implements SwarmOptimization {
 
 	private void updateParticleList(final int iteration) {
         ExecutorService es = Executors.newCachedThreadPool();
-        for (int p = 0; p < config.getNumParticles(); p++) {
-            final int particleNumber = p;
-            final double inertia = this.inertia;
+        final int particlesPerThread = config.getNumParticles() / config.getNumThreads();
+        final int remainder = config.getNumParticles() % config.getNumThreads();
+        final double inertia = this.inertia;
+        for (int t = 0; t < config.getNumThreads(); t++) {
+        	final int thread = t;
             es.execute(new Runnable() {
                 public void run() {
-                    updateParticle(iteration, particleNumber, inertia);
-                }
+			        for (int p = 0; p < particlesPerThread; p++) {
+			            int particleNumber = thread * particlesPerThread + p;
+	                    updateParticle(iteration, particleNumber, inertia);
+	                }
+			        if (thread < remainder) {
+			        	updateParticle(iteration, particlesPerThread*config.getNumThreads() + thread, inertia);
+			        }
+				}
             });
-		}
+        }
         es.shutdown();
         try {
 			if(!es.awaitTermination(10*config.getNumParticles()^2,TimeUnit.MILLISECONDS)) {
@@ -147,11 +167,6 @@ public class ConcurrentOptimization implements SwarmOptimization {
 		//System.out.println("Particle: " + position + ", " + velocity + ", " + function.function(position));
 		setParticle(particle, new Particle(position, velocity, bestPosition, config.function(position), config.function(bestPosition)));
 		updateGlobalBest(getParticle(particle));
-		
-		synchronized(this) {
-			incrementParticleNumber();
-			notifyAll();
-		}
 
 		log.addParticlePosition(iteration, particle, position);
 	}
@@ -192,16 +207,6 @@ public class ConcurrentOptimization implements SwarmOptimization {
 				fdrPosition = selfBestPosition;
 			}
 			
-			synchronized(this) {
-				while (particleNumber < particle) {
-					try {
-						wait();
-					} catch (InterruptedException e) {
-						
-					}
-				}
-			}
-			
 			double dVelocity = inertia * oldVelocity.get(d) + 
 					rand.nextDouble() * config.getSelfWeight() * (selfBestPosition.get(d) - position.get(d)) + 
 					rand.nextDouble() * config.getBestWeight() * (bestPosition.get(d) - position.get(d)) + 
@@ -211,19 +216,7 @@ public class ConcurrentOptimization implements SwarmOptimization {
 		return velocity;
 	}
 
-	private List<Double> bestFitnessDistance(int particle, int dimension) {
-		if (particle+1 == config.getNumParticles()) {
-			synchronized(this) {
-				while (particleNumber == 0) {
-					try {
-						wait();
-					} catch (InterruptedException e) {
-						
-					}
-				}
-			}
-		}
-		
+	private List<Double> bestFitnessDistance(int particle, int dimension) {		
 		List<Double> bestFDRPosition = getParticle((particle+1)%config.getNumParticles()).getBestPosition();
 		double bestFDR = fdr(particle, (particle+1)%config.getNumParticles(), dimension);
 		for (int q = particle+1; q < config.getNumParticles(); q++) {
@@ -234,15 +227,6 @@ public class ConcurrentOptimization implements SwarmOptimization {
 			}
 		}
 		for (int q = 0; q < particle; q++) {
-			synchronized(this) {
-				while (particleNumber <= q) {
-					try {
-						wait();
-					} catch (InterruptedException e) {
-						
-					}
-				}
-			}
 			double fdr = fdr(particle, q, dimension);
 			if (fdr > bestFDR) {
 				bestFDRPosition = getParticle(q).getBestPosition();

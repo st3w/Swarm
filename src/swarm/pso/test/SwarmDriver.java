@@ -15,6 +15,8 @@ import swarm.pso.logging.Logging;
 import swarm.pso.model.PSOFunction;
 import swarm.pso.service.ConcurrentOptimization;
 import swarm.pso.service.SequentialOptimization;
+import swarm.pso.service.WrapAllOptimization;
+import swarm.pso.service.WrapperOptimization;
 import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
 import swarm.pso.structures.config.FunctionConfiguration;
 import swarm.pso.structures.config.SwarmConfiguration;
@@ -127,7 +129,7 @@ public class SwarmDriver {
 		else 
 			solution = pso.optimize();
 		
-		ConcurrentOptimization pso2 = new ConcurrentOptimization(concurrentConfig, rand2, log2);
+		WrapAllOptimization pso2 = new WrapAllOptimization(concurrentConfig, rand2, log2);
 		List<Double> solution2 = pso2.optimize();
 		
 		log1.writeToFile("SeqFDR");
