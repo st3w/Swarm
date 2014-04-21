@@ -123,24 +123,18 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 	@Override
 	public List<Double> optimize() {
 		// Perform iterations
-		startParticleList();
+		startParticleList(0);
 		return bestPosition;
 	}
 	
 	public List<Double> optimize(int timeout) {
 		// Perform iterations
-		
-		startParticleList();
-//			try {
-//				Thread.sleep(timeout);
-//			} catch (InterruptedException e) {
-//				
-//			}
+		startParticleList(timeout);
 		return bestPosition;
 	}
 
-	private void startParticleList() {
-        ExecutorService es = Executors.newCachedThreadPool();
+	private void startParticleList(final int timeout) {
+		ExecutorService es = Executors.newCachedThreadPool();
         final int particlesPerThread = config.getNumParticles() / config.getNumThreads();
         final int remainder = config.getNumParticles() % config.getNumThreads();
 
@@ -158,6 +152,15 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 				        	updateParticle(iteration, particlesPerThread*config.getNumThreads() + thread, inertia);
 				        }
 				        inertia = updateInertia(iteration+1);
+				        
+				        if (timeout > 0) {
+					        try {
+					        	Thread.sleep(timeout);
+							} catch (InterruptedException e) {
+								
+							}
+				        }
+				        
 				        try {
 							barrier.await();
 						} catch (InterruptedException e) {
