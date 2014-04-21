@@ -36,149 +36,9 @@ public class SequentialOptimization implements SwarmOptimization {
 			List<Double> initialPosition = initialPosition();
 			double initialValue = config.function(initialPosition);
 			List<Double> initialVelocity = initialVelocity();
-			particles.set(p, new Particle(initialPosition, initialVelocity, 
+			setParticle(p, new Particle(initialPosition, initialVelocity, 
 					initialPosition, initialValue, initialValue));
-			updateGlobalBest(particles.get(p));
-		}
-	}
-	
-	public List<Double> optimize() {
-		// Perform iterations
-		for (int p = 0; p < config.getNumParticles(); p++) {
-			System.out.println("Particle " + p + ": " + particles.get(p).getValue());
-		}
-		System.out.println("Inertia: " + inertia);
-		for (int i = 0; i < config.getNumIterations()/2; i++) {
-			updateParticleList(i);
-		}
-		System.out.println("-----------------------------------------------------");
-		for (int p = 0; p < config.getNumParticles(); p++) {
-			System.out.println("Particle " + p + ": " + particles.get(p).getValue());
-		}
-		System.out.println("Inertia: " + inertia);
-		for (int i = config.getNumIterations()/2; i < config.getNumIterations(); i++) {
-			updateParticleList(i);
-		}
-		System.out.println("-----------------------------------------------------");
-		for (int p = 0; p < config.getNumParticles(); p++) {
-			System.out.println("Particle " + p + ": " + particles.get(p).getValue());
-		}
-		System.out.println("Inertia: " + inertia);
-		return bestPosition;
-	}
-	
-	private void updateInertia(int iteration) {
-		inertia = ((config.getInertia() - config.getMinInertia()) * (config.getNumIterations() - (iteration))) /
-				config.getNumIterations() + config.getMinInertia();
-//		inertia = ((inertia - config.getMinInertia()) * (config.getNumIterations() - (iteration))) /
-//				(config.getNumIterations() + config.getMinInertia());
-	}
-
-	private void updateParticleList(int iteration) {
-		for (int p = 0; p < config.getNumParticles(); p++) {
-			updateParticle(iteration, p, inertia);
-		}
-		updateInertia(iteration+1);
-		log.addBestPosition(iteration, bestPosition);
-		log.addTime(iteration, System.nanoTime());
-//		try {
-//			Thread.sleep(30);
-//		} catch (InterruptedException e) {
-//			
-//		}
-	}
-	
-	private void updateParticle(int iteration, int particle, double inertia) {
-		//System.out.println("Particle " + particle + ", initialPosition: " + particles.get(particle).getPosition());
-		
-		List<Double> velocity = calculateVelocity(particle, inertia);
-		List<Double> position = calculatePosition(particle, velocity);
-		List<Double> bestPosition = selectBestPosition(particle, position);
-		
-		//System.out.println("Particle: " + position + ", " + velocity + ", " + function.function(position));
-		particles.set(particle, new Particle(position, velocity, bestPosition, 
-				config.function(position), config.function(bestPosition)));
-		updateGlobalBest(particles.get(particle));
-		
-		log.addParticlePosition(iteration, particle, position);
-	}
-	
-	private List<Double> selectBestPosition(int particle, List<Double> newPosition) {
-		List<Double> currentBestPosition = particles.get(particle).getBestPosition();
-		if (config.function(currentBestPosition) <= config.function(newPosition)) {
-			return currentBestPosition;
-		}
-		else {
-			return newPosition;
-		}
-	}
-	
-	private List<Double> calculatePosition(int particle, List<Double> velocity) {
-		List<Double> position = Arrays.asList(new Double[config.getDimensions()]);
-		List<Double> oldPosition = particles.get(particle).getPosition();
-		
-		for (int d = 0; d < config.getDimensions(); d++) {
-			position.set(d, Math.min(config.getUpperBounds().get(d), 
-					Math.max(config.getLowerBounds().get(d), oldPosition.get(d) + velocity.get(d))));
-		}
-		
-		return position;
-	}
-
-	private List<Double> calculateVelocity(int particle, double inertia) {
-		List<Double> velocity = Arrays.asList(new Double[config.getDimensions()]);
-		List<Double> oldVelocity = particles.get(particle).getVelocity();
-		List<Double> position = particles.get(particle).getPosition();
-		List<Double> selfBestPosition = particles.get(particle).getBestPosition();
-		for (int d = 0; d < config.getDimensions(); d++) {
-			List<Double> fdrPosition;
-			if (config.getFdrWeight() != 0.0) {
-				fdrPosition = bestFitnessDistance(particle, d);
-			}
-			else {
-				fdrPosition = selfBestPosition;
-			}
-			double dVelocity = inertia * oldVelocity.get(d) + 
-					rand.nextDouble() * config.getSelfWeight() * (selfBestPosition.get(d) - position.get(d)) + 
-					rand.nextDouble() * config.getBestWeight() * (bestPosition.get(d) - position.get(d)) + 
-					rand.nextDouble() * config.getFdrWeight() * (fdrPosition.get(d) - position.get(d));
-			velocity.set(d, Math.signum(dVelocity) * Math.min(config.getMaximumVelocity().get(d), Math.abs(dVelocity)));
-		}
-		return velocity;
-	}
-	
-	private List<Double> bestFitnessDistance(int particle, int dimension) {
-		//List<Double> bestFDRPosition = particles.get(0).getBestPosition();
-		List<Double> bestFDRPosition = particles.get((particle+1)%config.getNumParticles()).getBestPosition();
-		//double bestFDR = fdr(particle, 0, dimension);
-		double bestFDR = fdr(particle, (particle+1)%config.getNumParticles(), dimension);
-		for (int q = particle+1; q < config.getNumParticles(); q++) {
-			double fdr = fdr(particle, q, dimension);
-			if (fdr > bestFDR) {
-				bestFDRPosition = particles.get(q).getBestPosition();
-				bestFDR = fdr;
-			}
-		}
-		for (int q = 0; q < particle; q++) {
-			double fdr = fdr(particle, q, dimension);
-			if (fdr > bestFDR) {
-				bestFDRPosition = particles.get(q).getBestPosition();
-				bestFDR = fdr;
-			}
-		}
-		return bestFDRPosition;
-	}
-	
-	private double fdr(int currentParticle, int foreignParticle, int dimension) {
-		double fitness = -(particles.get(foreignParticle).getBestValue() - particles.get(currentParticle).getValue());
-		double distance = Math.abs(
-				particles.get(foreignParticle).getBestPosition().get(dimension) - 
-				particles.get(currentParticle).getPosition().get(dimension));
-		if (distance != 0) {
-			return fitness/distance;
-		}
-		else {
-			return Double.MAX_VALUE;
+			updateGlobalBest(getParticle(p));
 		}
 	}
 	
@@ -210,6 +70,136 @@ public class SequentialOptimization implements SwarmOptimization {
 		if (bestPosition == null || p.getValue() < bestValue) {
 			bestPosition = p.getPosition();
 			bestValue = p.getValue();
+		}
+	}
+
+	private Particle getParticle(int index) {
+		return particles.get(index);
+	}
+	
+	private void setParticle(int index, Particle particle) {
+		particles.set(index, particle);
+	}
+	
+	@Override
+	public List<Double> optimize() {
+		// Perform iterations
+		for (int i = 0; i < config.getNumIterations(); i++) {
+			updateParticleList(i);
+		}
+		return bestPosition;
+	}
+
+	private void updateParticleList(int iteration) {
+		for (int p = 0; p < config.getNumParticles(); p++) {
+			updateParticle(iteration, p, inertia);
+		}
+		updateInertia(iteration+1);
+		log.addBestPosition(iteration, bestPosition);
+		log.addTime(iteration, System.nanoTime());
+//		try {
+//			Thread.sleep(30);
+//		} catch (InterruptedException e) {
+//			
+//		}
+	}
+	
+	private void updateInertia(int iteration) {
+		inertia = ((config.getInertia() - config.getMinInertia()) * (config.getNumIterations() - (iteration))) /
+				config.getNumIterations() + config.getMinInertia();
+//		inertia = ((inertia - config.getMinInertia()) * (config.getNumIterations() - (iteration))) /
+//				(config.getNumIterations() + config.getMinInertia());
+	}
+	
+	private void updateParticle(int iteration, int particle, double inertia) {
+		List<Double> velocity = calculateVelocity(particle, inertia);
+		List<Double> position = calculatePosition(particle, velocity);
+		List<Double> bestPosition = selectBestPosition(particle, position);
+		
+		//System.out.println("Particle: " + position + ", " + velocity + ", " + function.function(position));
+		setParticle(particle, new Particle(position, velocity, bestPosition, 
+				config.function(position), config.function(bestPosition)));
+		updateGlobalBest(getParticle(particle));
+		
+		log.addParticlePosition(iteration, particle, position);
+	}
+	
+	private List<Double> selectBestPosition(int particle, List<Double> newPosition) {
+		List<Double> currentBestPosition = getParticle(particle).getBestPosition();
+		if (config.function(currentBestPosition) <= config.function(newPosition)) {
+			return currentBestPosition;
+		}
+		else {
+			return newPosition;
+		}
+	}
+	
+	private List<Double> calculatePosition(int particle, List<Double> velocity) {
+		List<Double> position = Arrays.asList(new Double[config.getDimensions()]);
+		List<Double> oldPosition = getParticle(particle).getPosition();
+		
+		for (int d = 0; d < config.getDimensions(); d++) {
+			position.set(d, Math.min(config.getUpperBounds().get(d), 
+					Math.max(config.getLowerBounds().get(d), oldPosition.get(d) + velocity.get(d))));
+		}
+		
+		return position;
+	}
+
+	private List<Double> calculateVelocity(int particle, double inertia) {
+		List<Double> velocity = Arrays.asList(new Double[config.getDimensions()]);
+		List<Double> oldVelocity = getParticle(particle).getVelocity();
+		List<Double> position = getParticle(particle).getPosition();
+		List<Double> selfBestPosition = getParticle(particle).getBestPosition();
+		for (int d = 0; d < config.getDimensions(); d++) {
+			List<Double> fdrPosition;
+			if (config.getFdrWeight() != 0.0) {
+				fdrPosition = bestFitnessDistance(particle, d);
+			}
+			else {
+				fdrPosition = selfBestPosition;
+			}
+			double dVelocity = inertia * oldVelocity.get(d) + 
+					rand.nextDouble() * config.getSelfWeight() * (selfBestPosition.get(d) - position.get(d)) + 
+					rand.nextDouble() * config.getBestWeight() * (bestPosition.get(d) - position.get(d)) + 
+					rand.nextDouble() * config.getFdrWeight() * (fdrPosition.get(d) - position.get(d));
+			velocity.set(d, Math.signum(dVelocity) * Math.min(config.getMaximumVelocity().get(d), Math.abs(dVelocity)));
+		}
+		return velocity;
+	}
+	
+	private List<Double> bestFitnessDistance(int particle, int dimension) {
+		//List<Double> bestFDRPosition = particles.get(0).getBestPosition();
+		List<Double> bestFDRPosition = getParticle((particle+1)%config.getNumParticles()).getBestPosition();
+		//double bestFDR = fdr(particle, 0, dimension);
+		double bestFDR = fdr(particle, (particle+1)%config.getNumParticles(), dimension);
+		for (int q = particle+1; q < config.getNumParticles(); q++) {
+			double fdr = fdr(particle, q, dimension);
+			if (fdr > bestFDR) {
+				bestFDRPosition = getParticle(q).getBestPosition();
+				bestFDR = fdr;
+			}
+		}
+		for (int q = 0; q < particle; q++) {
+			double fdr = fdr(particle, q, dimension);
+			if (fdr > bestFDR) {
+				bestFDRPosition = getParticle(q).getBestPosition();
+				bestFDR = fdr;
+			}
+		}
+		return bestFDRPosition;
+	}
+	
+	private double fdr(int currentParticle, int foreignParticle, int dimension) {
+		double fitness = -(getParticle(foreignParticle).getBestValue() - getParticle(currentParticle).getValue());
+		double distance = Math.abs(
+				getParticle(foreignParticle).getBestPosition().get(dimension) - 
+				getParticle(currentParticle).getPosition().get(dimension));
+		if (distance != 0) {
+			return fitness/distance;
+		}
+		else {
+			return Double.MAX_VALUE;
 		}
 	}
 }
