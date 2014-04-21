@@ -109,6 +109,19 @@ public class ConcurrentOptimization implements SwarmOptimization {
 		}
 		return bestPosition;
 	}
+	
+	public List<Double> optimize(int timeout) {
+		// Perform iterations
+		for (int i = 0; i < config.getNumIterations(); i++) {
+			updateParticleList(i);
+			try {
+				Thread.sleep(timeout);
+			} catch (InterruptedException e) {
+				
+			}
+		}
+		return bestPosition;
+	}
 
 	private void updateParticleList(final int iteration) {
         ExecutorService es = Executors.newCachedThreadPool();

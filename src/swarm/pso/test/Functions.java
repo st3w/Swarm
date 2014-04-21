@@ -64,14 +64,10 @@ public class Functions {
 	}
 	
 	public static class TableFunc extends PSOFunction<Double> {
-		public final int dimensions;
+		public static final int DIMENSIONS = 2;
 		public static final double MINIMUM = -19.2085;
 		private final double lowerBound = -10.0;
 		private final double upperBound = 10.0;
-		
-		public TableFunc(int dimensions) {
-			this.dimensions = dimensions;
-		}
 		
 		public Double function(List<Double> arguments) {
 			return - (Math.abs(
@@ -83,7 +79,7 @@ public class Functions {
 		
 		@Override
 		public int getDimensions() {
-			return dimensions;
+			return DIMENSIONS;
 		}
 
 		@Override
@@ -92,18 +88,18 @@ public class Functions {
 		}
 		
 		public List<Double> getLowerBounds() {
-			List<Double> bounds = Arrays.asList(new Double[dimensions]);
+			List<Double> bounds = Arrays.asList(new Double[DIMENSIONS]);
 			
-			for (int i = 0; i < dimensions; i++)
+			for (int i = 0; i < DIMENSIONS; i++)
 				bounds.set(i, lowerBound);
 			
 			return bounds;
 		}
 		
 		public List<Double> getUpperBounds() {
-			List<Double> bounds = Arrays.asList(new Double[dimensions]);
+			List<Double> bounds = Arrays.asList(new Double[DIMENSIONS]);
 			
-			for (int i = 0; i < dimensions; i++)
+			for (int i = 0; i < DIMENSIONS; i++)
 				bounds.set(i, upperBound);
 			
 			return bounds;

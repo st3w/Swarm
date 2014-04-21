@@ -97,7 +97,7 @@ public class SequentialOptimization implements SwarmOptimization {
 			try {
 				Thread.sleep(timeout);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				
 			}
 		}
 		return bestPosition;
