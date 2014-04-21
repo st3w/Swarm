@@ -185,14 +185,18 @@ public class WrapperOptimization implements SwarmOptimization {
 			return newPosition;
 		}
 	}
-
+	
 	private List<Double> calculatePosition(int particle, List<Double> velocity) {
 		List<Double> position = Arrays.asList(new Double[config.getDimensions()]);
 		List<Double> oldPosition = getParticle(particle).getPosition();
 		
 		for (int d = 0; d < config.getDimensions(); d++) {
-			position.set(d, Math.min(config.getUpperBounds().get(d),
-					Math.max(config.getLowerBounds().get(d), oldPosition.get(d) + velocity.get(d))));
+			double dPos = oldPosition.get(d) + velocity.get(d);
+			position.set(d, Math.min(config.getUpperBounds().get(d), 
+					Math.max(config.getLowerBounds().get(d), dPos)));
+			if (position.get(d) != dPos) {
+				velocity.set(d, -velocity.get(d));
+			}
 		}
 		
 		return position;
