@@ -130,11 +130,6 @@ public class ConcurrentOptimization implements SwarmOptimization {
 		updateInertia(iteration+1);
 		log.addBestPosition(iteration, bestPosition);
 		log.addTime(iteration, System.nanoTime());
-		//		try {
-		//		Thread.sleep(30);
-		//	} catch (InterruptedException e) {
-		//		
-		//	}
 	}
 	
 	private void updateInertia(int iteration) {
@@ -155,7 +150,8 @@ public class ConcurrentOptimization implements SwarmOptimization {
 			incrementParticleNumber();
 			notifyAll();
 		}
-		
+
+		log.addParticlePosition(iteration, particle, position);
 	}
 
 	private List<Double> selectBestPosition(int particle, List<Double> newPosition) {
