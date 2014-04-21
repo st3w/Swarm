@@ -19,6 +19,7 @@ import swarm.pso.structures.config.FunctionConfiguration;
 import swarm.pso.structures.config.SwarmConfiguration;
 import swarm.pso.ui.LogPainter;
 
+//MainDriver allows the user to specify various parameters for running concurrent optimization, with or without animation
 public class MainDriver {
 	public static final int DIMENSIONS = 2;
 	
@@ -35,12 +36,11 @@ public class MainDriver {
 	public static final boolean USE_SEED = false;
 	
 	public static void main(String[] args) throws IllegalArgumentException {
-		// Make a function to optimize
-		PSOFunction<Double> function;
+		PSOFunction<Double> function; //Holds the target optimization function
 		int numParticles = 0;
 		int numIterations = 0;
-		int animationTimeout = 0;
-		int dimensions = DIMENSIONS;
+		int animationTimeout = 0; //Specifies the number of milliseconds in between PSO updates, for animation. 0 for no animation.
+		int dimensions = DIMENSIONS; //Modifies the number of dimensions for multidimensional functions
 		
 		if (args.length < 3 && args.length > 0)
 			throw new IllegalArgumentException("You must have 3 to 5 arguments if any.");
@@ -87,53 +87,65 @@ public class MainDriver {
 			animationTimeout = 0;
 		}
 		
-		// Function bounds are a list of parameters
 		List<Double> maximumVelocity = Arrays.asList(new Double[function.getDimensions()]);
 		
-		// Set up max velocity for function
+		// Set up max velocity for function as the max distance across the domain
 		for (int i = 0; i < function.getDimensions(); i++) {
 			maximumVelocity.set(i, 
 					Math.abs(function.getUpperBounds().get(i)-function.getLowerBounds().get(i)));
 		}
 		
+		// Set up configurations related to the Optimization problem
 		FunctionConfiguration funcConf = new FunctionConfiguration(function.getDimensions(), function, 
 				function.getLowerBounds(), function.getUpperBounds());
 		
+		// Set up configurations related to the PSO algorithm
 		SwarmConfiguration swarmConf = new SwarmConfiguration(INITIAL_INERTIA, FINAL_INERTIA, SELF_WEIGHT, BEST_WEIGHT,
 				FDR_WEIGHT, numParticles, numIterations, maximumVelocity, funcConf);
 		
+		// Set up the configurations for concurrent PSO
 		ConcurrentSwarmConfiguration concurrentConfig = new ConcurrentSwarmConfiguration(swarmConf, Runtime.getRuntime().availableProcessors());
 		
 		Random rand;
 		
 		if (USE_SEED) {
+			// allow pre-specified seeds (useful for debugging)
 			rand = new Random(SEED);
 		}
 		else {
 			rand = new Random();
 		}
 		
+		// set up the logging for writing to file and for animation
 		Logging log = new Logging(concurrentConfig);
 		
+		// if update delay is larger than 0, bring up the animation window
 		if (animationTimeout > 0) {
 			setupLogPainter(log, concurrentConfig);
 		}
 		
+		//initialize the optimization class with our configurations
 		ParticleParallelOptimization pso = new ParticleParallelOptimization(concurrentConfig, rand, log);
 		List<Double> solution;
 		
 		if (animationTimeout > 0) 
+			//find the solution, using a delay so it can be animated
 			solution = pso.optimize(animationTimeout);
 		else 
+			//find the solution as quickly as possible
 			solution = pso.optimize();
 
+		//write best positions, errors, and times to mainResults_bestposition.txt, mainResults_errorvals.txt,
+		//and mainResults_times.txt
 		log.writeToFile("mainResults_");
 		
+		//print solution array to screen, followed by the minimum value
 		System.out.println(solution);
 		System.out.println(function.function(solution));
 	}
 	
 	private static void setupLogPainter(final Logging log, final SwarmConfiguration config) {
+		//initialize a component to paint the function and the current particle positions
 		final LogPainter lp = new LogPainter(log, config);
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -152,6 +164,8 @@ public class MainDriver {
 				frame.setVisible(true);
 			}
 		});
+		
+		//Create a timer to refresh the panel every 30 ms
 		final Timer timer = new Timer(30, null);
 		timer.addActionListener(new ActionListener() {
 			@Override

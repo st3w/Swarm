@@ -6,6 +6,7 @@ import java.util.List;
 
 import swarm.pso.model.PSOFunction;
 
+//Holds Optimization parameters
 public class FunctionConfiguration {
 	private final int dimensions;
 	private final PSOFunction<Double> function;

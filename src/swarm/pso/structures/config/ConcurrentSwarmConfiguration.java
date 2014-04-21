@@ -1,5 +1,6 @@
 package swarm.pso.structures.config;
 
+//Holds Concurrent PSO parameters
 public class ConcurrentSwarmConfiguration extends SwarmConfiguration {
     private final int numThreads;
 

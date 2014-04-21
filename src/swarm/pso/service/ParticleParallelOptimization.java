@@ -13,19 +13,21 @@ import swarm.pso.structures.Particle;
 import swarm.pso.structures.ParticleWrapper;
 import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
 
+//This class represents our latest and greatest implementation of concurrent FDR PSO
 public class ParticleParallelOptimization implements SwarmOptimization {
-	private final ConcurrentSwarmConfiguration config;
+	private final ConcurrentSwarmConfiguration config; // config has info about the function and particle behavior
 	
-	private final List<ParticleWrapper> particles;
+	private final List<ParticleWrapper> particles; // The structures containing each particle's state information
 	
 	private List<Double> bestPosition = null; // the parameters that give the best known value
 	private double bestValue; // the best known value of the function
 	
-	private final CyclicBarrier barrier;
+	private final CyclicBarrier barrier; // Threads wait on barrier before continuing with next iteration.
+											// This prevents one thread from getting too far ahead
 	
-	private final Random rand;
+	private final Random rand; // RNG
 	
-	private final Logging log;
+	private final Logging log; // Stores some state information
 	
 	public ParticleParallelOptimization(ConcurrentSwarmConfiguration config, Logging log) {
 		this(config, new Random(), log);
@@ -39,6 +41,7 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 		barrier = new CyclicBarrier(ParticleParallelOptimization.this.config.getNumThreads(), new Runnable() {
 			private int iteration = 0;
 			
+			// Last particle out will log state at time of completion
 			@Override
 			public void run() {
 	    		ParticleParallelOptimization.this.log.addBestPosition(iteration, bestPosition);
@@ -51,6 +54,7 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 		
 		particles = Arrays.asList(new ParticleWrapper[config.getNumParticles()]);
 
+		//Initialize particles
 		for (int p = 0; p < config.getNumParticles(); p++) {
 			List<Double> initialPosition = initialPosition();
 			
@@ -66,10 +70,6 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 		}
 	}
 
-    //synchronized public int getIteration() { return iteration; }
-    //synchronized public int getParticleNumber() { return particleNumber; }
-	//synchronized public void incrementParticleNumber() { particleNumber += 1 % config.getNumParticles(); }
-
 	private List<Double> initialPosition() {
 		List<Double> position = Arrays.asList(new Double[config.getDimensions()]);
 		for (int d = 0; d < config.getDimensions(); d++) {
@@ -83,10 +83,6 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 	private List<Double> initialVelocity() {
 		List<Double> velocity = Arrays.asList(new Double[config.getDimensions()]);
 		for (int d = 0; d < config.getDimensions(); d++) {
-			//Double lowPos = lowerBounds.get(d); //Possible 
-			//Double highPos = upperBounds.get(d);
-			//Double lowVel = lowPos - highPos;
-			//Double highVel = highPos - lowPos;
 			Double lowVel = -config.getMaximumVelocity().get(d);
 			Double highVel = config.getMaximumVelocity().get(d);
 			velocity.set(d, lowVel+rand.nextDouble()*(highVel-lowVel));
@@ -94,7 +90,7 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 		return velocity;
 	}
 	
-	private void updateGlobalBest(Particle p) {
+	private synchronized void updateGlobalBest(Particle p) {
 		if (bestPosition == null || p.getValue() < bestValue) {
 			bestPosition = p.getPosition();
 			bestValue = p.getValue();
@@ -120,6 +116,7 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 		pw.setParticle(particle);
 	}
 	
+	// performs the optimization algorithm
 	@Override
 	public List<Double> optimize() {
 		// Perform iterations
@@ -127,42 +124,44 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 		return bestPosition;
 	}
 	
+	// performs optimization with a delay for animation
 	public List<Double> optimize(int timeout) {
 		// Perform iterations
 		startParticleList(timeout);
 		return bestPosition;
 	}
 
-	private void startParticleList(final int timeout) {
+	// Starts threads to handle all particle updates
+	private void startParticleList(final int delay) {
 		ExecutorService es = Executors.newCachedThreadPool();
-        final int particlesPerThread = config.getNumParticles() / config.getNumThreads();
-        final int remainder = config.getNumParticles() % config.getNumThreads();
+        final int particlesPerThread = config.getNumParticles() / config.getNumThreads(); // Each thread handles at least this many particles
+        final int remainder = config.getNumParticles() % config.getNumThreads(); // This many threads get 1 extra
 
         for (int t = 0; t < config.getNumThreads(); t++) {
         	final int thread = t;
             es.execute(new Runnable() {
                 public void run() {
                 	double inertia = config.getInertia();
-                	for (int iteration = 0; iteration < config.getNumIterations(); iteration++) {
-				        for (int p = 0; p < particlesPerThread; p++) {
+                	for (int iteration = 0; iteration < config.getNumIterations(); iteration++) { //Thread performs all iterations
+				        for (int p = 0; p < particlesPerThread; p++) { //For each particle in group
 				            int particleNumber = thread * particlesPerThread + p;
 		                    updateParticle(iteration, particleNumber, inertia);
 		                }
-				        if (thread < remainder) {
+				        if (thread < remainder) { //If this thread has a leftover particle
 				        	updateParticle(iteration, particlesPerThread*config.getNumThreads() + thread, inertia);
 				        }
 				        inertia = updateInertia(iteration+1);
 				        
-				        if (timeout > 0) {
+				        if (delay > 0) { //if delay is positive, sleep to allow animation
 					        try {
-					        	Thread.sleep(timeout);
+					        	Thread.sleep(delay);
 							} catch (InterruptedException e) {
 								
 							}
 				        }
 				        
 				        try {
-							barrier.await();
+							barrier.await(); // Synchronize after performing all updates in an iteration
 						} catch (InterruptedException e) {
 
 						} catch (BrokenBarrierException e) {
@@ -172,9 +171,9 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 				}
             });
         }
-        es.shutdown();
+        es.shutdown(); // Terminate and join
         try {
-			if(!es.awaitTermination(100*config.getNumParticles()^2,TimeUnit.MILLISECONDS)) {
+			if(!es.awaitTermination(100*(1+delay)*config.getNumParticles()^2,TimeUnit.MILLISECONDS)) {
 				System.err.println("Optimization failed to complete in " + (10*config.getNumIterations()*config.getNumParticles()^2) + " ms.");
 			}
 		} catch (InterruptedException e) {
@@ -182,11 +181,12 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 		}
 	}
 	
-	private double updateInertia(int iteration) {
+	private double updateInertia(int iteration) { //Calculate new inertia
 		return ((config.getInertia() - config.getMinInertia()) * (config.getNumIterations() - (iteration))) /
 				config.getNumIterations() + config.getMinInertia();
 	}
 	
+	//Remaining methods work similarly to SequentialOptimization
 	private void updateParticle(int iteration, int particle, double inertia) {
 		List<Double> velocity = calculateVelocity(particle, inertia);
 		List<Double> position = calculatePosition(particle, velocity);
@@ -194,7 +194,7 @@ public class ParticleParallelOptimization implements SwarmOptimization {
 		
 		//System.out.println("Particle: " + position + ", " + velocity + ", " + function.function(position));
 		setParticle(particle, new Particle(position, velocity, bestPosition, config.function(position), config.function(bestPosition)));
-		updateGlobalBest(getParticle(particle));
+		updateGlobalBest(getParticle(particle)); //Method is now synchronized
 
 		log.addParticlePosition(iteration, particle, position);
 	}

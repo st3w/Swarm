@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+//Holds PSO parameters
 public class SwarmConfiguration extends FunctionConfiguration {
 	private final double inertia;
 	private final double minInertia;

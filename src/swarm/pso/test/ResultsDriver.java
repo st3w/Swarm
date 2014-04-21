@@ -12,6 +12,7 @@ import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
 import swarm.pso.structures.config.FunctionConfiguration;
 import swarm.pso.structures.config.SwarmConfiguration;
 
+//This class is a simple driver that performs 10 optimizations and writes the results to a files.
 public class ResultsDriver {
 	public static final int DIMENSIONS = 2;
 	//private static final double[] LOWER_BOUNDS = {-10, -10};

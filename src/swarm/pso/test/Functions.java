@@ -5,6 +5,7 @@ import java.util.List;
 
 import swarm.pso.model.PSOFunction;
 
+//Contains classes that extend PSOFunction<Double> for testing purposes
 public class Functions {
 	// Sphere is a sample PSOFunction for testing purposes. It represents a sum-of-squares function with arbitrary dimensions.
 	// For example, a new Sphere(3) represents the function f = x^2 + y^2 + z^2.

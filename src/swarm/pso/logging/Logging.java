@@ -81,7 +81,7 @@ public class Logging {
     }
 
     public void writeToFile(String prefix) {
-        //writeBestPositionsToFile(prefix);
+        writeBestPositionsToFile(prefix);
         writeErrorsToFile(prefix);
         writeTimesToFile(prefix);
     }

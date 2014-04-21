@@ -35,6 +35,7 @@ public class LogPainter extends JLabel {
 		double maxVal = values[0][0];
 		double minVal = values[0][0];
 		
+		// samples values of the function over the domain
 		for (int x = 0; x < WIDTH; x++) {
 			double xpos = x * (config.getUpperBounds().get(0)-config.getLowerBounds().get(0)) / WIDTH + config.getLowerBounds().get(0);
 			for (int y = 0; y < HEIGHT; y++) {
@@ -53,6 +54,7 @@ public class LogPainter extends JLabel {
 			}
 		}
 		
+		// Colors an image based on the values sampled. Black is the lowest value, while white is the highest
 		for (int x = 0; x < WIDTH; x++) {
 			for (int y = 0; y < HEIGHT; y++) {
 				int grayval = (int) ((values[x][y]-minVal)*(Color.WHITE.getRed()-Color.BLACK.getRed())/(maxVal-minVal) + Color.BLACK.getRed());
@@ -64,6 +66,7 @@ public class LogPainter extends JLabel {
 		setIcon(new ImageIcon(img));
 	}
 	
+	//Draw the image and a dot for each particle
 	protected void paintComponent(Graphics g) {
 		//g.drawImage(img, 0, 0, null);
 		super.paintComponent(g);
