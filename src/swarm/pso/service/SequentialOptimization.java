@@ -89,6 +89,20 @@ public class SequentialOptimization implements SwarmOptimization {
 		}
 		return bestPosition;
 	}
+	
+	public List<Double> optimize(int timeout) {
+		// Perform iterations
+		for (int i = 0; i < config.getNumIterations(); i++) {
+			updateParticleList(i);
+			try {
+				Thread.sleep(timeout);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		return bestPosition;
+	}
+	
 
 	private void updateParticleList(int iteration) {
 		for (int p = 0; p < config.getNumParticles(); p++) {
@@ -97,11 +111,6 @@ public class SequentialOptimization implements SwarmOptimization {
 		updateInertia(iteration+1);
 		log.addBestPosition(iteration, bestPosition);
 		log.addTime(iteration, System.nanoTime());
-//		try {
-//			Thread.sleep(30);
-//		} catch (InterruptedException e) {
-//			
-//		}
 	}
 	
 	private void updateInertia(int iteration) {
