@@ -55,7 +55,7 @@ public class LogPainter extends JLabel {
 		
 		for (int x = 0; x < WIDTH; x++) {
 			for (int y = 0; y < HEIGHT; y++) {
-				int grayval = (int) (values[x][y]*(Color.WHITE.getRed()-Color.BLACK.getRed())/(maxVal-minVal) + Color.BLACK.getRed());
+				int grayval = (int) ((values[x][y]-minVal)*(Color.WHITE.getRed()-Color.BLACK.getRed())/(maxVal-minVal) + Color.BLACK.getRed());
 				g.setColor(new Color(grayval, grayval, grayval));
 				g.drawLine(x, y, x, y);
 			}

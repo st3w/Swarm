@@ -61,6 +61,9 @@ public class SwarmDriver {
 			case 2:
 				function = new Functions.Rosenbrock(DIMENSIONS);
 				break;
+			case 3:
+				function = new Functions.TableFunc(DIMENSIONS);
+				break;
 			default:
 				throw new IllegalArgumentException("Function number must be between 0 and 2");
 			}

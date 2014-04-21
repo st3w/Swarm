@@ -63,6 +63,53 @@ public class Functions {
 		
 	}
 	
+	public static class TableFunc extends PSOFunction<Double> {
+		public final int dimensions;
+		public static final double MINIMUM = -19.2085;
+		private final double lowerBound = -10.0;
+		private final double upperBound = 10.0;
+		
+		public TableFunc(int dimensions) {
+			this.dimensions = dimensions;
+		}
+		
+		public Double function(List<Double> arguments) {
+			return - (Math.abs(
+					Math.sin(arguments.get(0)) * Math.cos(arguments.get(1))
+					* Math.exp(Math.abs(
+							1 - (Math.sqrt(Math.pow(arguments.get(0), 2)
+							+ Math.pow(arguments.get(1), 2)))/Math.PI))));
+		}
+		
+		@Override
+		public int getDimensions() {
+			return dimensions;
+		}
+
+		@Override
+		public Double getSolution() {
+			return MINIMUM;
+		}
+		
+		public List<Double> getLowerBounds() {
+			List<Double> bounds = Arrays.asList(new Double[dimensions]);
+			
+			for (int i = 0; i < dimensions; i++)
+				bounds.set(i, lowerBound);
+			
+			return bounds;
+		}
+		
+		public List<Double> getUpperBounds() {
+			List<Double> bounds = Arrays.asList(new Double[dimensions]);
+			
+			for (int i = 0; i < dimensions; i++)
+				bounds.set(i, upperBound);
+			
+			return bounds;
+		}
+	}
+	
 	public static class Ackley extends PSOFunction<Double> {
 		// Dimensions is the number of arguments in the function
 		public final int dimensions;
