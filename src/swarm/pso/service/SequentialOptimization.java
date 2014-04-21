@@ -139,8 +139,12 @@ public class SequentialOptimization implements SwarmOptimization {
 		List<Double> oldPosition = getParticle(particle).getPosition();
 		
 		for (int d = 0; d < config.getDimensions(); d++) {
+			double dPos = oldPosition.get(d) + velocity.get(d);
 			position.set(d, Math.min(config.getUpperBounds().get(d), 
-					Math.max(config.getLowerBounds().get(d), oldPosition.get(d) + velocity.get(d))));
+					Math.max(config.getLowerBounds().get(d), dPos)));
+			if (position.get(d) != dPos) {
+				velocity.set(d, -velocity.get(d));
+			}
 		}
 		
 		return position;

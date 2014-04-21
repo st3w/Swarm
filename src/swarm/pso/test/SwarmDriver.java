@@ -14,7 +14,6 @@ import javax.swing.Timer;
 import swarm.pso.logging.Logging;
 import swarm.pso.model.PSOFunction;
 import swarm.pso.service.SequentialOptimization;
-import swarm.pso.structures.config.ConcurrentSwarmConfiguration;
 import swarm.pso.structures.config.FunctionConfiguration;
 import swarm.pso.structures.config.SwarmConfiguration;
 import swarm.pso.ui.LogPainter;
@@ -60,10 +59,10 @@ public class SwarmDriver {
 		SwarmConfiguration swarmConf = new SwarmConfiguration(INITIAL_INERTIA, FINAL_INERTIA, SELF_WEIGHT, BEST_WEIGHT,
 				FDR_WEIGHT,  NUMBER_PARTICLES, NUMBER_ITERATIONS, maximumVelocity, funcConf);
 		
-		ConcurrentSwarmConfiguration concurrentConfig = new ConcurrentSwarmConfiguration(swarmConf, Runtime.getRuntime().availableProcessors()-1);
+		//ConcurrentSwarmConfiguration concurrentConfig = new ConcurrentSwarmConfiguration(swarmConf, Runtime.getRuntime().availableProcessors()-1);
 		
 		Random rand1;
-		Random rand2;
+		//Random rand2;
 		long seed;
 		if (USE_SEED) {
 			seed = SEED;
@@ -72,28 +71,28 @@ public class SwarmDriver {
 			seed = (new Random()).nextLong();
 		}
 		rand1 = new Random(seed);
-		rand2 = new Random(seed);
+		//rand2 = new Random(seed);
 		
 		Logging log1 = new Logging(swarmConf);
-		Logging log2 = new Logging(concurrentConfig);
+		//Logging log2 = new Logging(concurrentConfig);
 		
 		setupLogPainter(log1, swarmConf);
 		
 		SequentialOptimization pso = new SequentialOptimization(swarmConf, rand1, log1);
 		List<Double> solution = pso.optimize();
 		
-		SequentialOptimization pso2 = new SequentialOptimization(swarmConf, rand2, log2);
-		List<Double> solution2 = pso2.optimize();
+		//SequentialOptimization pso2 = new SequentialOptimization(swarmConf, rand2, log2);
+		//List<Double> solution2 = pso2.optimize();
 		
 		log1.writeToFile("SeqFDR");
-		log2.writeToFile("ConFDR");
+		//log2.writeToFile("ConFDR");
 		System.out.println(seed);
 		
 		System.out.println(solution);
 		System.out.println(function.function(solution));
 		
-		System.out.println(solution2);
-		System.out.println(function.function(solution2));
+//		System.out.println(solution2);
+//		System.out.println(function.function(solution2));
 		timer.stop();
 	}
 
